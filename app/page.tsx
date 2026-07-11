@@ -1,18 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-const software = [
-  { name: "Obsidian", mark: "Ob", category: "效率工具", tone: "violet", desc: "把笔记变成彼此连接的知识网络，数据始终保存在自己手中。", tags: ["知识管理", "Markdown"], url: "https://obsidian.md", featured: true },
-  { name: "LocalSend", mark: "Ls", category: "实用工具", tone: "blue", desc: "跨平台、局域网内直接传文件，不上传云端，也不需要账号。", tags: ["文件传输", "开源"], url: "https://localsend.org", featured: true },
-  { name: "Visual Studio Code", mark: "VS", category: "开发工具", tone: "sky", desc: "轻快、可扩展的代码编辑器，几乎适合每一种开发工作流。", tags: ["编辑器", "免费"], url: "https://code.visualstudio.com", featured: false },
-  { name: "Figma", mark: "Fi", category: "设计创作", tone: "coral", desc: "从界面设计到团队协作，一处完成产品设计的完整流程。", tags: ["UI 设计", "协作"], url: "https://www.figma.com", featured: false },
-  { name: "Bitwarden", mark: "Bw", category: "隐私安全", tone: "navy", desc: "可信赖的开源密码管理器，让每个账号都能使用独立强密码。", tags: ["密码管理", "开源"], url: "https://bitwarden.com", featured: false },
-  { name: "Everything", mark: "Ev", category: "实用工具", tone: "orange", desc: "在 Windows 上用文件名瞬间找到文件，小巧、纯粹而且极快。", tags: ["Windows", "搜索"], url: "https://www.voidtools.com", featured: false },
-  { name: "HandBrake", mark: "Hb", category: "影音娱乐", tone: "green", desc: "成熟的开源视频转码工具，预设清晰，新手也能快速上手。", tags: ["视频", "开源"], url: "https://handbrake.fr", featured: false },
-  { name: "Krita", mark: "Kr", category: "设计创作", tone: "pink", desc: "专为数字绘画与 2D 动画打造的专业级免费创作工具。", tags: ["绘画", "免费"], url: "https://krita.org", featured: false },
-  { name: "Raycast", mark: "Ra", category: "效率工具", tone: "red", desc: "用快捷键启动应用、搜索文件和自动化日常操作。", tags: ["macOS", "启动器"], url: "https://www.raycast.com", featured: false },
-];
+import software from "../data/software.json";
 
 const categories = ["全部", "效率工具", "开发工具", "设计创作", "实用工具", "隐私安全", "影音娱乐"];
 
@@ -29,7 +18,7 @@ export default function Home() {
   return <main>
     <header className="site-header">
       <a className="brand" href="#top" aria-label="好软集首页"><span className="brand-mark">好</span><span>好软集</span></a>
-      <nav className={menuOpen ? "nav open" : "nav"} aria-label="主导航"><a href="#collection">发现软件</a><a href="#about">关于本站</a><a className="submit-link" href="https://github.com" target="_blank" rel="noreferrer">推荐软件 <span>↗</span></a></nav>
+      <nav className={menuOpen ? "nav open" : "nav"} aria-label="主导航"><a href="#collection">发现软件</a><a href="#about">关于本站</a><a className="submit-link" href="https://github.com/chyahy/software-picks/issues/new" target="_blank" rel="noreferrer">推荐软件 <span>↗</span></a></nav>
       <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="打开菜单">{menuOpen ? "关闭" : "菜单"}</button>
     </header>
     <section className="hero" id="top">
