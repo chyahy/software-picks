@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>当当老师的魔法小屋 · 24点挑战</title>
     <meta name="description" content="在当当老师的魔法小屋里找到桌上的纸牌，点击进入24点数学游戏。">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='13' y='8' width='38' height='48' rx='6' fill='%23fffdf7' stroke='%23262623' stroke-width='4'/%3E%3Cpath d='M32 18c-9 6-12 12-7 17 3 3 6 1 7-1 1 2 4 4 7 1 5-5 2-11-7-17z' fill='%23b94b4b'/%3E%3Cpath d='M28 43h8' stroke='%23262623' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
@@ -1019,6 +1022,40 @@
     <script>
         (function () {
             'use strict';
+            const PAGE_VERSION = '2026.09.17.2';
+
+            async function refreshWhenSiteUpdates() {
+                if (!/^https?:$/.test(location.protocol)) return;
+                try {
+                    const response = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+                    if (!response.ok) return;
+                    const latest = await response.json();
+                    if (latest.version && latest.version !== PAGE_VERSION) {
+                        const freshUrl = new URL(location.href);
+                        freshUrl.searchParams.set('version', latest.version);
+                        location.replace(freshUrl.href);
+                    }
+                } catch (error) {
+                    // 离线或网络不稳定时继续使用当前页面，不打断课堂。
+                }
+            }
+
+            if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+                addEventListener('load', async () => {
+                    try {
+                        const registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+                        registration.update();
+                    } catch (error) {
+                        // Service Worker 不可用时，版本检测仍然能够刷新页面。
+                    }
+                });
+            }
+
+            addEventListener('pageshow', refreshWhenSiteUpdates);
+            addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') refreshWhenSiteUpdates();
+            });
+
             const mqCoarse = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
             const mqFine = window.matchMedia ? window.matchMedia('(pointer: fine)').matches : true;
             const IS_TOUCH = mqCoarse || (('ontouchstart' in window) && navigator.maxTouchPoints > 0 && !mqFine);
