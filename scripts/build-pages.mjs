@@ -34,4 +34,5 @@ await writeFile(join(out, "styles.css"), `${css}\n[hidden]{display:none!importan
 await writeFile(join(out, ".nojekyll"), "", "utf8");
 await cp(join(root, "public/og.png"), join(out, "og.png"));
 await cp(join(root, "public/favicon.svg"), join(out, "favicon.svg"));
+await cp(join(root, "public/magic-24"), join(out, "magic-24"), { recursive: true });
 console.log(`Built GitHub Pages site with ${software.length} software entries.`);
