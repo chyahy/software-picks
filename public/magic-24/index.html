@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>魔法小屋 · 24点挑战</title>
-    <meta name="description" content="在魔法小屋里找到桌上的纸牌，点击进入24点数学游戏。">
+    <title>当当老师的魔法小屋 · 24点挑战</title>
+    <meta name="description" content="在当当老师的魔法小屋里找到桌上的纸牌，点击进入24点数学游戏。">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='13' y='8' width='38' height='48' rx='6' fill='%23fffdf7' stroke='%23262623' stroke-width='4'/%3E%3Cpath d='M32 18c-9 6-12 12-7 17 3 3 6 1 7-1 1 2 4 4 7 1 5-5 2-11-7-17z' fill='%23b94b4b'/%3E%3Cpath d='M28 43h8' stroke='%23262623' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
     <style>
         html,
@@ -965,17 +965,16 @@
         <div class="viewBtn" id="resetBtn">重置史莱姆位置</div>
         <div class="sep"></div>
         <div class="sub">关 于</div>
-        <!-- ★ 作者信息 ★ -->
+        <!-- ★ 当当老师小课堂 ★ -->
         <div class="aboutBox">
-            <div class="authorName">作者：YIBI2333</div>
-            <a class="aboutLink" href="https://yibi2333.fun" target="_blank" rel="noopener">个人网站 ↗</a>
-            <a class="aboutLink" href="https://github.com/YIBI2333" target="_blank" rel="noopener">GitHub ↗</a>
-            <a class="aboutLink" href="https://space.bilibili.com/312607590" target="_blank" rel="noopener">B站 ↗</a>
+            <div class="authorName">作者：当当老师</div>
+            <a class="aboutLink" href="game.html">当当老师小课堂 ↗</a>
+            <a class="aboutLink" href="https://github.com/chyahy" target="_blank" rel="noopener">当当老师 GitHub ↗</a>
 
         </div>
     </div>
     <div id="signEditor">
-        <div class="lbl">✏️ 编辑路牌文字</div><input id="signInput" maxlength="10" value="魔女小屋"><button
+        <div class="lbl">✏️ 编辑路牌文字</div><input id="signInput" maxlength="10" value="当当老师小课堂"><button
             id="signOk">确定</button>
     </div>
     <div id="noteEditor">
@@ -1467,7 +1466,7 @@
             const signG = new THREE.Group(); signG.position.set(3.1, 0, 6.3); signG.rotation.y = -0.45; scene.add(signG);
             put(edge(new THREE.CylinderGeometry(0.035, 0.05, 1.5, 8)), 0, 0.75, 0, 0.04, 0, 0.05, signG);
             const signCanvas = document.createElement('canvas'); signCanvas.width = 256; signCanvas.height = 128; const sctx = signCanvas.getContext('2d');
-            const signTexture = new THREE.CanvasTexture(signCanvas); let signText = '魔女小屋';
+            const signTexture = new THREE.CanvasTexture(signCanvas); let signText = '当当老师小课堂';
             function drawSign(text) { const n = Math.max(text.length, 1); const size = n <= 4 ? 46 : n <= 6 ? 36 : n <= 8 ? 28 : 22; sctx.fillStyle = '#ffffff'; sctx.fillRect(0, 0, 256, 128); sctx.strokeStyle = '#111111'; sctx.lineWidth = 5; sctx.strokeRect(5, 5, 246, 118); sctx.lineWidth = 1.5; sctx.strokeRect(14, 14, 228, 100); sctx.fillStyle = '#111111'; sctx.font = 'bold ' + size + 'px "Microsoft YaHei", monospace'; sctx.textAlign = 'center'; sctx.textBaseline = 'middle'; sctx.fillText(text, 128, 66); signTexture.needsUpdate = true; }
             drawSign(signText);
             const signSideMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); const signFaceMat = new THREE.MeshBasicMaterial({ map: signTexture });
@@ -4920,7 +4919,7 @@
             const notes = [
                 { col: '#ffe66d', txt: '采月光草', rz: 0.12, px: -0.40, py: 1.26 },
                 { col: '#ffb3c6', txt: '归还魔法书', rz: -0.08, px: -0.05, py: 1.14 },
-                { col: '#aecdff', txt: '作者：YIBI2333', rz: 0.18, px: 0.36, py: 0.84 }
+                { col: '#aecdff', txt: '作者：当当老师', rz: 0.18, px: 0.36, py: 0.84 }
             ];
             let noteEditing = 0;
             for (let i = 0; i < notes.length; i++) {
@@ -8537,7 +8536,7 @@
             const sfxToggle = document.getElementById('sfxToggle'), sfxSlider = document.getElementById('sfxSlider');
             sfxToggle.addEventListener('click', () => { const on = !SND.isEnabled(); SND.setEnabled(on); sfxToggle.classList.toggle('on', on); if (on) SND.play('ui'); });
             sfxSlider.addEventListener('input', () => SND.setVolume(parseFloat(sfxSlider.value)));
-            function applySign() { signText = signInput.value.trim() || '魔女小屋'; drawSign(signText); signEditor.classList.remove('show'); signInput.blur(); SND.play('chim'); }
+            function applySign() { signText = signInput.value.trim() || '当当老师小课堂'; drawSign(signText); signEditor.classList.remove('show'); signInput.blur(); SND.play('chim'); }
             document.getElementById('signOk').addEventListener('click', applySign);
             signInput.addEventListener('keydown', e => { if (e.key === 'Enter') applySign(); if (e.key === 'Escape') { signEditor.classList.remove('show'); signInput.blur(); } e.stopPropagation(); });
 
