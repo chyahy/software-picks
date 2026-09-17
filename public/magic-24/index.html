@@ -3915,6 +3915,27 @@
             regMagic(deckG, start24PointGame);
             deckPrompt.addEventListener('click', start24PointGame);
 
+            function reset24PointPortal() {
+                gameLaunchStarted = false;
+                gamePortal.classList.remove('show');
+                deckState.phase = 'idle';
+                deckState.t0 = 0;
+                deckG.position.copy(DECK_HOME);
+                for (const card of deckCards) {
+                    card.position.copy(card.userData.base);
+                    card.rotation.set(0, 0, 0);
+                }
+                revealCard.grp.position.set(0, revealCard.homeY, 0);
+                revealCard.grp.rotation.set(0, 0, 0);
+            }
+
+            // 浏览器“返回”常会直接恢复缓存页面；此时要主动退出数字魔法过场。
+            addEventListener('pageshow', () => {
+                if (gameLaunchStarted || gamePortal.classList.contains('show')) {
+                    reset24PointPortal();
+                }
+            });
+
             function updateDeckPrompt() {
                 if (gameLaunchStarted || fullHouse) {
                     deckPrompt.classList.remove('visible');
