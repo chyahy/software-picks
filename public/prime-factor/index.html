@@ -3,8 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>质因数拆解挑战｜鲁老师小课堂</title>
   <meta name="description" content="选择质因数和乘号，把合数分解成质数相乘的形式。">
+  <script>
+    (() => {
+      const PAGE_VERSION = '2026.09.18.2';
+      async function checkForUpdate() {
+        try {
+          const response = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+          if (!response.ok) return;
+          const latest = await response.json();
+          if (latest.version && latest.version !== PAGE_VERSION) {
+            const key = 'prime-factor-reload-' + latest.version;
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, '1');
+            const next = new URL(location.href);
+            next.searchParams.set('v', latest.version);
+            location.replace(next.href);
+          }
+        } catch (_) {}
+      }
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+            registration.update();
+          } catch (_) {}
+          checkForUpdate();
+        });
+        addEventListener('pageshow', checkForUpdate);
+        addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
+      }
+    })();
+  </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%231c6b61'/%3E%3Ccircle cx='21' cy='25' r='11' fill='%23ffd763'/%3E%3Ccircle cx='43' cy='39' r='11' fill='%23ff8a5b'/%3E%3Cpath d='M27 30l10 5' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     :root{--ink:#173a43;--muted:#61767a;--green:#166b61;--green2:#238d7e;--cream:#f7f4e9;--paper:#fffef9;--yellow:#ffd45e;--orange:#ff8255;--red:#d84f4f;--blue:#4d82c4;--line:#d7e3df;--shadow:0 18px 48px rgba(30,72,71,.12)}

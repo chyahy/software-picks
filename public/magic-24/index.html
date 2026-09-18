@@ -1053,7 +1053,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.18.1';
+            const PAGE_VERSION = '2026.09.18.2';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -4223,8 +4223,8 @@
                 if (playSound) SND.play('magic');
                 factorState.timer = setTimeout(() => {
                     const target = location.protocol === 'file:'
-                        ? 'https://chyahy.github.io/software-picks/prime-factor/'
-                        : new URL('../prime-factor/', location.href).href;
+                        ? 'https://chyahy.github.io/software-picks/prime-factor/?v=2026.09.18.2'
+                        : new URL('../prime-factor/?v=2026.09.18.2', location.href).href;
                     window.location.href = target;
                 }, 1050);
             }
