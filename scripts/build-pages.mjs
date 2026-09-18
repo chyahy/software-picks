@@ -36,5 +36,6 @@ await cp(join(root, "public/og.png"), join(out, "og.png"));
 await cp(join(root, "public/favicon.svg"), join(out, "favicon.svg"));
 await cp(join(root, "public/magic-24"), join(out, "magic-24"), { recursive: true });
 await cp(join(root, "public/prime-factor"), join(out, "prime-factor"), { recursive: true });
+await cp(join(root, "public/cube-coloring"), join(out, "cube-coloring"), { recursive: true });
 await cp(join(root, "public/rational-numbers"), join(out, "rational-numbers"), { recursive: true });
 console.log(`Built GitHub Pages site with ${software.length} software entries.`);

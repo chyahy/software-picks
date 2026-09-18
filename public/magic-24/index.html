@@ -754,7 +754,8 @@
 
         /* 桌面教学入口：位置由三维场景实时投影到屏幕坐标 */
         #deckPrompt,
-        #factorPrompt {
+        #factorPrompt,
+        #rubikPrompt {
             position: fixed;
             left: 0;
             top: 0;
@@ -777,7 +778,8 @@
         }
 
         #deckPrompt.visible,
-        #factorPrompt.visible {
+        #factorPrompt.visible,
+        #rubikPrompt.visible {
             opacity: 1;
             visibility: visible;
         }
@@ -785,7 +787,9 @@
         #deckPrompt:hover,
         #deckPrompt:focus-visible,
         #factorPrompt:hover,
-        #factorPrompt:focus-visible {
+        #factorPrompt:focus-visible,
+        #rubikPrompt:hover,
+        #rubikPrompt:focus-visible {
             background: #fff3cf;
             transform: translate(-50%, calc(-100% - 20px));
             outline: none;
@@ -824,8 +828,34 @@
             vertical-align: -2px;
         }
 
+        #rubikPrompt {
+            border-color: #4c3f91;
+            background: rgba(247, 244, 255, .96);
+            color: #34286f;
+            box-shadow: 3px 4px 0 rgba(52, 40, 111, .16), 0 0 18px rgba(124, 92, 255, .22);
+        }
+
+        #rubikPrompt:hover,
+        #rubikPrompt:focus-visible {
+            background: #eee9ff;
+        }
+
+        #rubikPrompt .cubeIcon {
+            display: inline-grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            margin-right: 7px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #4a86c8, #9a5bb5);
+            color: #fff;
+            font: 800 11px/1 "Microsoft YaHei", sans-serif;
+            vertical-align: -2px;
+        }
+
         #deckPrompt::after,
-        #factorPrompt::after {
+        #factorPrompt::after,
+        #rubikPrompt::after {
             content: "";
             position: absolute;
             left: 50%;
@@ -932,7 +962,7 @@
         @keyframes portalSpin { to { transform: rotate(360deg); } }
 
         @media (max-width: 560px) {
-            #deckPrompt, #factorPrompt { font-size: 12px; padding: 8px 12px 8px 10px; }
+            #deckPrompt, #factorPrompt, #rubikPrompt { font-size: 12px; padding: 8px 12px 8px 10px; }
             .portalCard { width: 64px; height: 92px; margin: -46px 0 0 -32px; font-size: 32px; }
             #gamePortal.show .portalCard:nth-of-type(2) { --x: -110px; }
             #gamePortal.show .portalCard:nth-of-type(3) { --x: -37px; }
@@ -941,7 +971,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            #deckPrompt, #factorPrompt, #gamePortal { transition-duration: .01ms; }
+            #deckPrompt, #factorPrompt, #rubikPrompt, #gamePortal { transition-duration: .01ms; }
             .portalRing, #gamePortal.show .portalCard { animation-duration: .01ms; animation-iteration-count: 1; }
         }
     </style>
@@ -1033,6 +1063,7 @@
 
     <button id="deckPrompt" type="button" aria-label="点击桌上的纸牌，进入24点游戏"><span class="suit">♥</span>点击纸牌 · 开始24点</button>
     <button id="factorPrompt" type="button" aria-label="点击桌上的质因数分解机，进入分解质因数练习"><span class="factorIcon">2×</span>质因数分解机</button>
+    <button id="rubikPrompt" type="button" aria-label="点击桌上的魔方，进入正方体涂色探索"><span class="cubeIcon">立方</span>鲁老师 × 当当老师 · 正方体涂色</button>
     <div id="gamePortal" role="status" aria-live="polite" aria-label="正在进入24点游戏">
         <div class="portalInner">
             <div class="portalRing"></div>
@@ -1053,7 +1084,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.18.2';
+            const PAGE_VERSION = '2026.09.18.3';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -3687,7 +3718,10 @@
                     }
                 }
             }
-            const rubikState = { phase: 'idle', t0: 0, moves: [], mi: 0, scrambled: false, history: [] };
+            const rubikState = { phase: 'idle', t0: 0, moves: [], mi: 0, scrambled: false, history: [], timer: 0 };
+            const rubikPrompt = document.getElementById('rubikPrompt');
+            const rubikScreenPos = new THREE.Vector3();
+            let rubikLaunchStarted = false;
             let layerAnim = null;
             const AXV = { x: V(1, 0, 0), y: V(0, 1, 0), z: V(0, 0, 1) };
 
@@ -3743,35 +3777,52 @@
                 });
             }
 
-            regMagic(rubikG, () => {
-                const s = rubikState;
-                if (s.phase !== 'idle') return;
-                if (!s.scrambled) {
-                    const AX = ['x', 'y', 'z'], LS = [-1, 0, 1];
-                    s.moves = [];
-                    let lastAxis = '';
-                    for (let i = 0; i < 6; i++) {
-                        let ax;
-                        do {
-                            ax = AX[Math.floor(Math.random() * 3)];
-                        } while (ax === lastAxis);
-                        lastAxis = ax;
-                        s.moves.push({ a: ax, l: LS[Math.floor(Math.random() * 3)], d: Math.random() < 0.5 ? 1 : -1 });
-                    }
-                    s.history = s.moves.slice();
-                } else {
-                    s.moves = s.history.slice().reverse().map(m => ({ a: m.a, l: m.l, d: -m.d }));
-                }
-                s.mi = 0;
-                s.phase = 'up';
-                s.t0 = performance.now() * 0.001;
+            function startCubeColoring(playSound = true) {
+                if (rubikLaunchStarted || rubikState.phase !== 'idle') return;
+                rubikLaunchStarted = true;
+                rubikState.phase = 'launch';
+                rubikState.t0 = performance.now() * 0.001;
+                rubikPrompt.classList.remove('visible');
+                if (playSound) SND.play('magic');
+                rubikState.timer = setTimeout(() => {
+                    const target = location.protocol === 'file:'
+                        ? 'https://chyahy.github.io/software-picks/cube-coloring/?v=2026.09.18.1'
+                        : new URL('../cube-coloring/?v=2026.09.18.1', location.href).href;
+                    window.location.href = target;
+                }, 1050);
+            }
+
+            function resetRubikLaunch() {
+                if (rubikState.timer) clearTimeout(rubikState.timer);
+                rubikState.timer = 0;
+                rubikState.phase = 'idle';
+                rubikState.t0 = 0;
+                rubikLaunchStarted = false;
+                rubikG.position.copy(RUBIK_HOME);
+                rubikG.rotation.set(0, 0, 0);
+                rubikG.scale.setScalar(1);
+            }
+
+            rubikG.userData.aimLabel = '进入正方体涂色探索';
+            rubikG.userData.sfx = 'magic';
+            regMagic(rubikG, () => startCubeColoring(false));
+            rubikPrompt.addEventListener('click', () => startCubeColoring(true));
+            addEventListener('pageshow', () => {
+                if (rubikLaunchStarted || rubikState.phase !== 'idle') resetRubikLaunch();
             });
 
             function updateRubik(time) {
                 const s = rubikState;
                 if (s.phase === 'idle') return;
                 const e = time - s.t0;
-                if (s.phase === 'up') {
+                if (s.phase === 'launch') {
+                    const k = Math.min(e / 1.0, 1);
+                    const pulse = Math.sin(k * Math.PI);
+                    rubikG.position.y = RUBIK_HOME.y + pulse * 0.32;
+                    rubikG.rotation.y = k * Math.PI * 4;
+                    rubikG.rotation.x = pulse * 0.35;
+                    rubikG.scale.setScalar(1 + pulse * 0.42);
+                } else if (s.phase === 'up') {
                     const k = Math.min(e / 0.4, 1);
                     rubikG.position.y = RUBIK_HOME.y + (k * k * (3 - 2 * k)) * 0.25;
                     if (e >= 0.4) {
@@ -3789,6 +3840,20 @@
                         s.phase = 'idle';
                     }
                 }
+            }
+
+            function updateRubikPrompt() {
+                if (rubikLaunchStarted || fullHouse) {
+                    rubikPrompt.classList.remove('visible');
+                    return;
+                }
+                rubikG.getWorldPosition(rubikScreenPos);
+                rubikScreenPos.y += 0.28;
+                rubikScreenPos.project(camera);
+                const visible = rubikScreenPos.z > -1 && rubikScreenPos.z < 1 && Math.abs(rubikScreenPos.x) < 1.08 && Math.abs(rubikScreenPos.y) < 1.08;
+                rubikPrompt.style.left = ((rubikScreenPos.x * .5 + .5) * innerWidth) + 'px';
+                rubikPrompt.style.top = ((-.5 * rubikScreenPos.y + .5) * innerHeight) + 'px';
+                rubikPrompt.classList.toggle('visible', visible);
             }
 
             /* —— 通用倒塌/恢复 —— */
@@ -8742,6 +8807,7 @@
             const interactables = [
                 { x: DECK_HOME.x, z: DECK_HOME.z, r: 1.7, label: '拿起纸牌，进入24点游戏', act: start24PointGame },
                 { x: FACTOR_HOME.x, z: FACTOR_HOME.z, r: 1.6, label: '启动质因数分解机', act: () => startFactorPractice(true) },
+                { x: RUBIK_HOME.x, z: RUBIK_HOME.z, r: 1.6, label: '打开正方体涂色探索', act: () => startCubeColoring(true) },
                 { x: FX, z: FZ, r: 2.0, label: '点燃 / 熄灭壁炉', act: toggleFire },
                 { x: 0, z: 0, r: 2.4, label: '点亮 / 熄灭魔法吊灯', act: toggleLamp },
                 { x: 0, z: 4, r: 1.8, label: '打开 / 关上大门', act: () => toggleSpring(doorGroup) },
@@ -10293,6 +10359,7 @@
 
                 updateDeckPrompt();
                 updateFactorPrompt();
+                updateRubikPrompt();
                 renderer.render(scene, camera);
             }
             animate(0);

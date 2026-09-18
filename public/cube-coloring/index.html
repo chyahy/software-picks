@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正方体涂色探索｜鲁老师 × 当当老师</title>
+    <meta name="description" content="鲁老师 × 当当老师联合课堂：可旋转、可炸开的正方体表面涂色互动实验。">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <!-- Tailwind CSS -->
+    <script src="./assets/tailwind.js?v=2026.09.18.1"></script>
+    <!-- Three.js -->
+    <script src="./assets/three.min.js?v=2026.09.18.1"></script>
+    <!-- OrbitControls -->
+    <script src="./assets/OrbitControls.js?v=2026.09.18.1"></script>
+    <!-- GSAP -->
+    <script src="./assets/gsap.min.js?v=2026.09.18.1"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+        }
+        .stats-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            z-index: 100;
+        }
+        /* 新增规律面板样式 */
+        .rule-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            display: none;
+            transform: translateX(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .rule-panel.active {
+            display: block;
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .formula-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid transparent;
+        }
+        .formula-latex {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-style: italic;
+            color: #4facfe;
+            font-size: 1.1rem;
+        }
+        .control-btn {
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        .slider-container input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #4facfe;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+        .color-tag {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+    
+        .teacher-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px 6px 7px;
+            border: 1px solid rgba(147, 197, 253, .42);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .55);
+            box-shadow: 0 10px 30px rgba(2, 6, 23, .22);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .02em;
+            white-space: nowrap;
+        }
+        .ui-panel > div:first-child { align-items: flex-start; flex-direction: column; gap: 10px; }
+        .ui-panel h2 { white-space: nowrap; }
+        .teacher-brand b { color: #c4b5fd; margin: 0 2px; }
+        .brand-cube {
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            color: #fff;
+            background: linear-gradient(135deg, #38bdf8, #7c3aed);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
+            font-size: 10px;
+        }
+        .room-back {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 20;
+            padding: 10px 15px;
+            border: 1px solid rgba(196, 181, 253, .48);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, .64);
+            color: #f5f3ff;
+            box-shadow: 0 12px 36px rgba(2, 6, 23, .26);
+            backdrop-filter: blur(12px);
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform .2s ease, background .2s ease;
+        }
+        .room-back:hover, .room-back:focus-visible { transform: translateY(-2px); background: rgba(76, 29, 149, .78); outline: none; }
+        @media (max-width: 720px) {
+            .ui-panel { top: 10px; left: 10px; width: min(280px, calc(100vw - 20px)); max-height: calc(100vh - 20px); overflow-y: auto; }
+            .teacher-brand { font-size: 11px; padding-right: 8px; }
+            .brand-cube { width: 26px; height: 26px; }
+            .room-back { top: auto; right: 10px; bottom: 10px; padding: 9px 12px; }
+        }
+    </style>
+
+</head>
+<body>
+    <a class="room-back" href="../magic-24/" aria-label="返回魔法小屋">← 返回魔法小屋</a>
+    <div id="canvas-container"></div>
+
+    <div class="ui-panel">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl title-gradient">探索图形</h2>
+            <div class="teacher-brand" aria-label="鲁老师与当当老师联合课堂">
+                <span class="brand-cube" aria-hidden="true">立方</span>
+                <span>鲁老师 <b>×</b> 当当老师</span>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm mb-2 opacity-80">模型参数 (a&times;a&times;a)</label>
+            <div class="slider-container flex items-center gap-3">
+                <input type="range" id="sizeSlider" min="2" max="10" value="3">
+                <span id="sizeValue" class="w-8 text-center font-bold">3</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <button id="explodeBtn" class="control-btn bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-sm font-medium">炸开演示</button>
+            <button id="resetBtn" class="control-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium">重置视图</button>
+        </div>
+        <button id="ruleBtn" class="w-full control-btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-2 rounded-lg text-sm font-bold mb-6 shadow-lg">查看规律公式</button>
+
+        <div class="space-y-3">
+            <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                <div class="flex items-center">
+                    <span class="color-tag bg-red-500"></span>
+                    <span class="text-sm">3面涂色 (顶点)</span>
+                </div>
+                <input type="checkbox" id="toggle3" checked class="w-4 h-4 accent-red-500">
+            </div>
+            <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                <div class="flex items-center">
+                    <span class="color-tag bg-green-500"></span>
+                    <span class="text-sm">2面涂色 (棱)</span>
+                </div>
+                <input type="checkbox" id="toggle2" checked class="w-4 h-4 accent-green-500">
+            </div>
+            <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                <div class="flex items-center">
+                    <span class="color-tag bg-yellow-500"></span>
+                    <span class="text-sm">1面涂色 (面)</span>
+                </div>
+                <input type="checkbox" id="toggle1" checked class="w-4 h-4 accent-yellow-500">
+            </div>
+            <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                <div class="flex items-center">
+                    <span class="color-tag bg-gray-400"></span>
+                    <span class="text-sm">0面涂色 (内部)</span>
+                </div>
+                <input type="checkbox" id="toggle0" checked class="w-4 h-4 accent-gray-400">
+            </div>
+        </div>
+    </div>
+
+    <div class="rule-panel" id="rulePanel">
+        <div class="flex items-center justify-between mb-4 border-b border-white/20 pb-2">
+            <h3 class="text-lg font-bold text-purple-300">求正方体中不同涂色面的个数方法</h3>
+            <button id="closeRuleBtn" class="text-white/60 hover:text-white">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div class="formula-card border-red-500">
+                <p class="text-xs opacity-70 mb-1">3面涂色</p>
+                <p class="formula-latex">8 个</p>
+            </div>
+            <div class="formula-card border-green-500">
+                <p class="text-xs opacity-70 mb-1">2面涂色</p>
+                <p class="formula-latex">(a - 2) &times; 12</p>
+            </div>
+            <div class="formula-card border-yellow-500">
+                <p class="text-xs opacity-70 mb-1">1面涂色</p>
+                <p class="formula-latex">(a - 2) &times; (a - 2) &times; 6</p>
+            </div>
+            <div class="formula-card border-gray-400">
+                <p class="text-xs opacity-70 mb-1">0面涂色</p>
+                <p class="formula-latex">(a - 2) &times; (a - 2) &times; (a - 2)</p>
+            </div>
+        </div>
+        <div class="mt-4 p-2 bg-blue-900/30 rounded text-[11px] leading-relaxed text-blue-200">
+            💡 建议：先求出新棱长，再求不同涂色面的个数比较方便。
+        </div>
+    </div>
+
+    <div class="stats-panel">
+        <h3 class="text-sm font-bold mb-2 border-b border-white/20 pb-1">数量统计</h3>
+        <div class="text-xs space-y-1">
+            <p>总块数: <span id="statTotal" class="font-mono text-blue-300">27</span></p>
+            <p>3面涂色: <span id="stat3" class="font-mono text-red-400">8</span></p>
+            <p>2面涂色: <span id="stat2" class="font-mono text-green-400">12</span></p>
+            <p>1面涂色: <span id="stat1" class="font-mono text-yellow-400">6</span></p>
+            <p>0面涂色: <span id="stat0" class="font-mono text-gray-300">1</span></p>
+        </div>
+    </div>
+
+    <script type="module">
+        let scene, camera, renderer, controls;
+        let cubes = [];
+        let n = 3;
+        let isExploded = false;
+        const spacing = 1.05;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(8, 8, 12);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(10, 20, 10);
+            scene.add(directionalLight);
+
+            createCubes();
+            animate();
+        }
+
+        function createCubes() {
+            // 清除旧方块
+            cubes.forEach(c => scene.remove(c));
+            cubes = [];
+
+            const offset = (n - 1) / 2;
+
+            for (let x = 0; x < n; x++) {
+                for (let y = 0; y < n; y++) {
+                    for (let z = 0; z < n; z++) {
+                        const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+                        
+                        // 计算涂色面数
+                        let paintCount = 0;
+                        if (x === 0 || x === n - 1) paintCount++;
+                        if (y === 0 || y === n - 1) paintCount++;
+                        if (z === 0 || z === n - 1) paintCount++;
+
+                        // 根据涂色面数设置颜色
+                        let color;
+                        switch(paintCount) {
+                            case 3: color = 0xef4444; break; // 红色
+                            case 2: color = 0x22c55e; break; // 绿色
+                            case 1: color = 0xeab308; break; // 黄色
+                            default: color = 0x9ca3af; break; // 灰色
+                        }
+
+                        // 为每个面设置材质，只有暴露在外的面才有颜色，内部面为灰色
+                        const innerColor = 0x9ca3af; // 内部灰色
+                        const materials = [
+                            new THREE.MeshPhongMaterial({ color: (x === n - 1) ? color : innerColor }), // 右
+                            new THREE.MeshPhongMaterial({ color: (x === 0) ? color : innerColor }),     // 左
+                            new THREE.MeshPhongMaterial({ color: (y === n - 1) ? color : innerColor }), // 上
+                            new THREE.MeshPhongMaterial({ color: (y === 0) ? color : innerColor }),     // 下
+                            new THREE.MeshPhongMaterial({ color: (z === n - 1) ? color : innerColor }), // 前
+                            new THREE.MeshPhongMaterial({ color: (z === 0) ? color : innerColor })      // 后
+                        ];
+
+                        const cube = new THREE.Mesh(geometry, materials);
+                        
+                        // 初始位置
+                        const posX = (x - offset) * spacing;
+                        const posY = (y - offset) * spacing;
+                        const posZ = (z - offset) * spacing;
+                        cube.position.set(posX, posY, posZ);
+                        
+                        // 存储元数据
+                        cube.userData = {
+                            gridPos: { x, y, z },
+                            originalPos: new THREE.Vector3(posX, posY, posZ),
+                            paintCount: paintCount,
+                            explodeDir: new THREE.Vector3(x - offset, y - offset, z - offset).normalize()
+                        };
+
+                        scene.add(cube);
+                        cubes.push(cube);
+                    }
+                }
+            }
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = n * n * n;
+            const c3 = 8;
+            const c2 = Math.max(0, 12 * (n - 2));
+            const c1 = Math.max(0, 6 * (n - 2) * (n - 2));
+            const c0 = Math.max(0, (n - 2) * (n - 2) * (n - 2));
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('stat3').innerText = c3;
+            document.getElementById('stat2').innerText = c2;
+            document.getElementById('stat1').innerText = c1;
+            document.getElementById('stat0').innerText = c0;
+        }
+
+        function toggleExplode() {
+            isExploded = !isExploded;
+            const btn = document.getElementById('explodeBtn');
+            btn.innerText = isExploded ? "合拢演示" : "炸开演示";
+
+            cubes.forEach(cube => {
+                const targetPos = isExploded 
+                    ? cube.userData.originalPos.clone().add(cube.userData.explodeDir.clone().multiplyScalar(2))
+                    : cube.userData.originalPos;
+
+                gsap.to(cube.position, {
+                    x: targetPos.x,
+                    y: targetPos.y,
+                    z: targetPos.z,
+                    duration: 1,
+                    ease: "power2.inOut"
+                });
+            });
+        }
+
+        function updateVisibility() {
+            const show3 = document.getElementById('toggle3').checked;
+            const show2 = document.getElementById('toggle2').checked;
+            const show1 = document.getElementById('toggle1').checked;
+            const show0 = document.getElementById('toggle0').checked;
+
+            cubes.forEach(cube => {
+                const count = cube.userData.paintCount;
+                let visible = true;
+                if (count === 3 && !show3) visible = false;
+                if (count === 2 && !show2) visible = false;
+                if (count === 1 && !show1) visible = false;
+                if (count === 0 && !show0) visible = false;
+                
+                gsap.to(cube.scale, {
+                    x: visible ? 1 : 0,
+                    y: visible ? 1 : 0,
+                    z: visible ? 1 : 0,
+                    duration: 0.4,
+                    onComplete: () => { cube.visible = visible; }
+                });
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 事件监听
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        document.getElementById('sizeSlider').addEventListener('input', (e) => {
+            n = parseInt(e.target.value);
+            document.getElementById('sizeValue').innerText = n;
+            isExploded = false;
+            document.getElementById('explodeBtn').innerText = "炸开演示";
+            createCubes();
+        });
+
+        document.getElementById('explodeBtn').addEventListener('click', toggleExplode);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            gsap.to(camera.position, { x: 8, y: 8, z: 12, duration: 1 });
+            controls.target.set(0, 0, 0);
+        });
+
+        ['toggle3', 'toggle2', 'toggle1', 'toggle0'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateVisibility);
+        });
+
+        // 规律面板交互
+        const ruleBtn = document.getElementById('ruleBtn');
+        const rulePanel = document.getElementById('rulePanel');
+        const closeRuleBtn = document.getElementById('closeRuleBtn');
+
+        ruleBtn.addEventListener('click', () => {
+            rulePanel.classList.add('active');
+            rulePanel.style.display = 'block';
+            gsap.fromTo(rulePanel, { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.7)" });
+        });
+
+        closeRuleBtn.addEventListener('click', () => {
+            gsap.to(rulePanel, { x: 50, opacity: 0, duration: 0.3, onComplete: () => {
+                rulePanel.classList.remove('active');
+                rulePanel.style.display = 'none';
+            }});
+        });
+
+        init();
+    </script>
+
+</body>
+
+</html>
