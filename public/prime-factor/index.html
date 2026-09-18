@@ -113,7 +113,7 @@
         </div>
       </section>
       <aside class="settings">
-        <details>
+        <details id="settingsPanel">
           <summary>⚙ 出题设置</summary>
           <div class="settings-body">
             <h2>出题设置</h2>
@@ -131,7 +131,7 @@
   (()=>{
     'use strict';
     const $=s=>document.querySelector(s);
-    const els={target:$('#target'),questionNo:$('#questionNo'),equation:$('#equation'),keypad:$('#keypad'),feedback:$('#feedback'),undo:$('#undo'),clear:$('#clear'),check:$('#check'),reveal:$('#reveal'),retry:$('#retry'),min:$('#min'),max:$('#max'),primeOptions:$('#primeOptions'),newPrime:$('#newPrime'),addPrime:$('#addPrime'),apply:$('#apply'),settingsError:$('#settingsError'),streak:$('#streak'),confetti:$('#confetti')};
+    const els={target:$('#target'),questionNo:$('#questionNo'),equation:$('#equation'),keypad:$('#keypad'),feedback:$('#feedback'),undo:$('#undo'),clear:$('#clear'),check:$('#check'),reveal:$('#reveal'),retry:$('#retry'),min:$('#min'),max:$('#max'),primeOptions:$('#primeOptions'),newPrime:$('#newPrime'),addPrime:$('#addPrime'),apply:$('#apply'),settingsError:$('#settingsError'),settingsPanel:$('#settingsPanel'),streak:$('#streak'),confetti:$('#confetti')};
     const state={available:[2,3,5,7,11,13],enabled:new Set([2,3,5,7,11,13]),tokens:[],current:84,question:0,streak:0,locked:false,last:null};
 
     function isPrime(n){if(!Number.isInteger(n)||n<2)return false;if(n%2===0)return n===2;for(let i=3;i*i<=n;i+=2)if(n%i===0)return false;return true}
@@ -152,6 +152,12 @@
     function resetAnswer(){if(state.locked)return;state.tokens=[];renderEquation();setFeedback('','🔄','已经清空，重新分解这个合数吧。')}
     function addPrime(){const p=Number(els.newPrime.value);if(!isPrime(p)){els.settingsError.textContent='请输入一个质数，例如 17 或 19。';return}if(!state.available.includes(p))state.available.push(p);state.enabled.add(p);els.newPrime.value='';els.settingsError.textContent='';renderPrimeOptions()}
     function applySettings(){const lo=Number(els.min.value),hi=Number(els.max.value);if(!Number.isInteger(lo)||!Number.isInteger(hi)||lo<4||hi>9999||lo>hi){els.settingsError.textContent='请输入 4～9999 之间的有效范围，且最小值不能大于最大值。';return}if(!state.enabled.size){els.settingsError.textContent='请至少启用一个质因数。';return}renderKeypad();newQuestion()}
+
+    const desktopSettings=matchMedia('(min-width:821px)');
+    function syncSettingsPanel(){if(desktopSettings.matches)els.settingsPanel.open=true}
+    syncSettingsPanel();
+    if(desktopSettings.addEventListener)desktopSettings.addEventListener('change',syncSettingsPanel);
+    else desktopSettings.addListener(syncSettingsPanel);
 
     els.undo.addEventListener('click',()=>{if(!state.locked){state.tokens.pop();renderEquation()}});
     els.clear.addEventListener('click',resetAnswer);els.retry.addEventListener('click',resetAnswer);els.check.addEventListener('click',checkAnswer);els.reveal.addEventListener('click',reveal);els.addPrime.addEventListener('click',addPrime);els.apply.addEventListener('click',applySettings);els.newPrime.addEventListener('keydown',e=>{if(e.key==='Enter')addPrime()});
