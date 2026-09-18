@@ -853,6 +853,107 @@
             vertical-align: -2px;
         }
 
+        /* 小屋侧边的课堂游戏书签：收起时只露出标签，不遮挡三维场景。 */
+        #gameShelf {
+            position: fixed;
+            top: 92px;
+            right: 0;
+            z-index: 18;
+            display: flex;
+            align-items: flex-start;
+            width: 286px;
+            transform: translateX(240px);
+            transition: transform .34s cubic-bezier(.2, .8, .2, 1);
+            filter: drop-shadow(-8px 12px 18px rgba(31, 36, 32, .18));
+        }
+
+        #gameShelf.open { transform: translateX(0); }
+
+        #gameShelfToggle {
+            width: 46px;
+            min-width: 46px;
+            padding: 12px 6px;
+            border: 1.5px solid #4b5148;
+            border-right: 0;
+            border-radius: 14px 0 0 14px;
+            background: rgba(255, 249, 228, .96);
+            color: #31362f;
+            cursor: pointer;
+            font: 800 14px/1.15 "Microsoft YaHei", "PingFang SC", sans-serif;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,.55);
+        }
+
+        #gameShelfToggle .shelfArrow {
+            display: block;
+            margin-bottom: 7px;
+            color: #8b4f35;
+            font-size: 18px;
+            transition: transform .28s ease;
+        }
+
+        #gameShelf.open #gameShelfToggle .shelfArrow { transform: rotate(180deg); }
+
+        .gameShelfPanel {
+            width: 240px;
+            padding: 16px 14px 14px;
+            border: 1.5px solid #4b5148;
+            border-right: 0;
+            border-radius: 0 0 0 18px;
+            background: linear-gradient(155deg, rgba(255, 253, 242, .97), rgba(239, 232, 203, .96));
+            color: #2d312c;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,.55);
+        }
+
+        .gameShelfTitle {
+            margin: 0 0 11px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(75, 81, 72, .35);
+            font: 800 17px/1.2 "Microsoft YaHei", "PingFang SC", sans-serif;
+            letter-spacing: .05em;
+        }
+
+        .gameShelfList { display: grid; gap: 8px; }
+
+        .gameShelfLink {
+            display: grid;
+            grid-template-columns: 36px 1fr 16px;
+            align-items: center;
+            gap: 9px;
+            min-height: 48px;
+            padding: 7px 9px;
+            border: 1px solid rgba(71, 78, 69, .24);
+            border-radius: 11px;
+            background: rgba(255,255,255,.58);
+            color: #2d312c;
+            text-decoration: none;
+            font: 750 14px/1.25 "Microsoft YaHei", "PingFang SC", sans-serif;
+            transition: transform .18s ease, background .18s ease, border-color .18s ease;
+        }
+
+        .gameShelfLink:hover,
+        .gameShelfLink:focus-visible {
+            transform: translateX(-3px);
+            border-color: #8b4f35;
+            background: #fff9e7;
+            outline: none;
+        }
+
+        .gameShelfIcon {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #315e54;
+            color: #fff9df;
+            font: 900 13px/1 "Microsoft YaHei", sans-serif;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+        }
+
+        .gameShelfLink:nth-child(2) .gameShelfIcon { background: #8b4f35; }
+        .gameShelfLink:nth-child(3) .gameShelfIcon { background: #55468f; }
+        .gameShelfGo { color: #8b4f35; font-size: 18px; }
+
         #deckPrompt::after,
         #factorPrompt::after,
         #rubikPrompt::after {
@@ -963,6 +1064,9 @@
 
         @media (max-width: 560px) {
             #deckPrompt, #factorPrompt, #rubikPrompt { font-size: 12px; padding: 8px 12px 8px 10px; }
+            #gameShelf { top: 66px; width: min(286px, 88vw); transform: translateX(calc(100% - 46px)); }
+            #gameShelf.open { transform: translateX(0); }
+            .gameShelfPanel { width: calc(100% - 46px); }
             .portalCard { width: 64px; height: 92px; margin: -46px 0 0 -32px; font-size: 32px; }
             #gamePortal.show .portalCard:nth-of-type(2) { --x: -110px; }
             #gamePortal.show .portalCard:nth-of-type(3) { --x: -37px; }
@@ -971,7 +1075,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            #deckPrompt, #factorPrompt, #rubikPrompt, #gamePortal { transition-duration: .01ms; }
+            #deckPrompt, #factorPrompt, #rubikPrompt, #gameShelf, #gamePortal { transition-duration: .01ms; }
             .portalRing, #gamePortal.show .portalCard { animation-duration: .01ms; animation-iteration-count: 1; }
         }
     </style>
@@ -1063,7 +1167,18 @@
 
     <button id="deckPrompt" type="button" aria-label="点击桌上的纸牌，进入24点游戏"><span class="suit">♥</span>点击纸牌 · 开始24点</button>
     <button id="factorPrompt" type="button" aria-label="点击桌上的质因数分解机，进入分解质因数练习"><span class="factorIcon">2×</span>质因数分解机</button>
-    <button id="rubikPrompt" type="button" aria-label="点击桌上的魔方，进入正方体涂色探索"><span class="cubeIcon">立方</span>鲁老师 × 当当老师 · 正方体涂色</button>
+    <button id="rubikPrompt" type="button" aria-label="点击桌上的魔方，进入正方体涂色探索"><span class="cubeIcon">立方</span>正方体涂色探索</button>
+    <aside id="gameShelf" aria-label="课堂游戏快捷入口">
+        <button id="gameShelfToggle" type="button" aria-expanded="false" aria-controls="gameShelfList"><span class="shelfArrow" aria-hidden="true">‹</span>游<br>戏</button>
+        <div class="gameShelfPanel">
+            <h2 class="gameShelfTitle">课堂游戏</h2>
+            <nav id="gameShelfList" class="gameShelfList" aria-label="选择游戏">
+                <a class="gameShelfLink" href="game.html"><span class="gameShelfIcon">24</span><span>24点游戏</span><span class="gameShelfGo">›</span></a>
+                <a class="gameShelfLink" href="../prime-factor/?v=2026.09.18.2" data-live="https://chyahy.github.io/software-picks/prime-factor/?v=2026.09.18.2"><span class="gameShelfIcon">2×</span><span>分解质因数</span><span class="gameShelfGo">›</span></a>
+                <a class="gameShelfLink" href="../cube-coloring/?v=2026.09.18.1" data-live="https://chyahy.github.io/software-picks/cube-coloring/?v=2026.09.18.1"><span class="gameShelfIcon">立方</span><span>正方体涂色</span><span class="gameShelfGo">›</span></a>
+            </nav>
+        </div>
+    </aside>
     <div id="gamePortal" role="status" aria-live="polite" aria-label="正在进入24点游戏">
         <div class="portalInner">
             <div class="portalRing"></div>
@@ -1084,7 +1199,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.18.3';
+            const PAGE_VERSION = '2026.09.18.4';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -1116,6 +1231,24 @@
             addEventListener('pageshow', refreshWhenSiteUpdates);
             addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible') refreshWhenSiteUpdates();
+            });
+
+            const gameShelf = document.getElementById('gameShelf');
+            const gameShelfToggle = document.getElementById('gameShelfToggle');
+            function setGameShelf(open) {
+                gameShelf.classList.toggle('open', open);
+                gameShelfToggle.setAttribute('aria-expanded', String(open));
+            }
+            gameShelfToggle.addEventListener('click', () => setGameShelf(!gameShelf.classList.contains('open')));
+            gameShelf.querySelectorAll('[data-live]').forEach(link => {
+                link.addEventListener('click', event => {
+                    if (location.protocol !== 'file:') return;
+                    event.preventDefault();
+                    location.href = link.dataset.live;
+                });
+            });
+            addEventListener('keydown', event => {
+                if (event.key === 'Escape' && gameShelf.classList.contains('open')) setGameShelf(false);
             });
 
             const mqCoarse = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
