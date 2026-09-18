@@ -752,8 +752,9 @@
             font-size: 16px
         }
 
-        /* 纸牌入口：位置由三维场景实时投影到屏幕坐标 */
-        #deckPrompt {
+        /* 桌面教学入口：位置由三维场景实时投影到屏幕坐标 */
+        #deckPrompt,
+        #factorPrompt {
             position: fixed;
             left: 0;
             top: 0;
@@ -775,13 +776,16 @@
             user-select: none;
         }
 
-        #deckPrompt.visible {
+        #deckPrompt.visible,
+        #factorPrompt.visible {
             opacity: 1;
             visibility: visible;
         }
 
         #deckPrompt:hover,
-        #deckPrompt:focus-visible {
+        #deckPrompt:focus-visible,
+        #factorPrompt:hover,
+        #factorPrompt:focus-visible {
             background: #fff3cf;
             transform: translate(-50%, calc(-100% - 20px));
             outline: none;
@@ -795,7 +799,33 @@
             vertical-align: -1px;
         }
 
-        #deckPrompt::after {
+        #factorPrompt {
+            border-color: #315e54;
+            background: rgba(239, 255, 246, .95);
+            color: #214b43;
+            box-shadow: 3px 4px 0 rgba(33, 75, 67, .16), 0 0 18px rgba(89, 229, 183, .24);
+        }
+
+        #factorPrompt:hover,
+        #factorPrompt:focus-visible {
+            background: #ddffed;
+        }
+
+        #factorPrompt .factorIcon {
+            display: inline-grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            margin-right: 7px;
+            border-radius: 7px;
+            background: #315e54;
+            color: #dfffc9;
+            font: 800 12px/1 "Microsoft YaHei", sans-serif;
+            vertical-align: -2px;
+        }
+
+        #deckPrompt::after,
+        #factorPrompt::after {
             content: "";
             position: absolute;
             left: 50%;
@@ -902,7 +932,7 @@
         @keyframes portalSpin { to { transform: rotate(360deg); } }
 
         @media (max-width: 560px) {
-            #deckPrompt { font-size: 12px; padding: 8px 12px 8px 10px; }
+            #deckPrompt, #factorPrompt { font-size: 12px; padding: 8px 12px 8px 10px; }
             .portalCard { width: 64px; height: 92px; margin: -46px 0 0 -32px; font-size: 32px; }
             #gamePortal.show .portalCard:nth-of-type(2) { --x: -110px; }
             #gamePortal.show .portalCard:nth-of-type(3) { --x: -37px; }
@@ -911,7 +941,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            #deckPrompt, #gamePortal { transition-duration: .01ms; }
+            #deckPrompt, #factorPrompt, #gamePortal { transition-duration: .01ms; }
             .portalRing, #gamePortal.show .portalCard { animation-duration: .01ms; animation-iteration-count: 1; }
         }
     </style>
@@ -1002,6 +1032,7 @@
     <div class="touchBtn" id="btnCast">施法</div>
 
     <button id="deckPrompt" type="button" aria-label="点击桌上的纸牌，进入24点游戏"><span class="suit">♥</span>点击纸牌 · 开始24点</button>
+    <button id="factorPrompt" type="button" aria-label="点击桌上的质因数分解机，进入分解质因数练习"><span class="factorIcon">2×</span>质因数分解机</button>
     <div id="gamePortal" role="status" aria-live="polite" aria-label="正在进入24点游戏">
         <div class="portalInner">
             <div class="portalRing"></div>
@@ -1022,7 +1053,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.17.2';
+            const PAGE_VERSION = '2026.09.18.1';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -4056,6 +4087,200 @@
                         deckG.position.copy(DECK_HOME);
                         s.phase = 'idle';
                     }
+                }
+            }
+
+            /* —— 质因数分解机：桌面上的可点击教学入口 —— */
+            const factorMachineG = new THREE.Group();
+            const FACTOR_HOME = V(1.80, TBL_TOP + 0.012, -2.18);
+            factorMachineG.position.copy(FACTOR_HOME);
+            factorMachineG.rotation.y = -0.06;
+            scene.add(factorMachineG);
+
+            const factorJade = LITMAT(0x315e54);
+            const factorDark = LITMAT(0x173b35);
+            const factorGold = LITMAT(0xd5a94c);
+            const factorEdge = new THREE.LineBasicMaterial({ color: 0x173b35 });
+            const factorGoldEdge = new THREE.LineBasicMaterial({ color: 0x7a5a1c });
+            const factorBaseGeo = new THREE.BoxGeometry(0.50, 0.052, 0.24);
+            const factorBase = new THREE.Group();
+            factorBase.add(new THREE.Mesh(factorBaseGeo, factorJade));
+            factorBase.add(new THREE.LineSegments(new THREE.EdgesGeometry(factorBaseGeo), factorEdge));
+            factorBase.position.y = 0.028;
+            factorMachineG.add(factorBase);
+
+            const factorScreenPivot = new THREE.Group();
+            factorScreenPivot.position.set(0, 0.225, -0.005);
+            factorScreenPivot.rotation.x = -0.10;
+            factorMachineG.add(factorScreenPivot);
+            const factorBodyGeo = new THREE.BoxGeometry(0.49, 0.34, 0.052);
+            const factorBody = new THREE.Mesh(factorBodyGeo, factorDark);
+            factorScreenPivot.add(factorBody);
+            factorScreenPivot.add(new THREE.LineSegments(new THREE.EdgesGeometry(factorBodyGeo), factorGoldEdge));
+
+            for (const sx of [-1, 1]) {
+                const support = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.18, 0.035), factorGold);
+                support.position.set(sx * 0.205, -0.245, 0);
+                factorScreenPivot.add(support);
+            }
+
+            const factorCanvas = document.createElement('canvas');
+            factorCanvas.width = 512;
+            factorCanvas.height = 360;
+            const factorCtx = factorCanvas.getContext('2d');
+            const factorTexture = new THREE.CanvasTexture(factorCanvas);
+            const factorScreenMat = new THREE.MeshBasicMaterial({ map: factorTexture, side: THREE.DoubleSide });
+            const factorScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.43, 0.285), factorScreenMat);
+            factorScreen.position.z = 0.027;
+            factorScreenPivot.add(factorScreen);
+
+            const factorGlowMat = new THREE.MeshBasicMaterial({
+                color: 0x72ffc8, transparent: true, opacity: 0.08,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            const factorGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.48, 0.33), factorGlowMat);
+            factorGlow.position.z = 0.025;
+            factorGlow.userData.noHit = true;
+            factorGlow.renderOrder = 7;
+            factorScreenPivot.add(factorGlow);
+
+            function drawFactorScreen(progress, flash) {
+                const c = factorCtx;
+                c.clearRect(0, 0, 512, 360);
+                const grad = c.createLinearGradient(0, 0, 0, 360);
+                grad.addColorStop(0, '#174b42');
+                grad.addColorStop(1, '#0b2f2c');
+                c.fillStyle = grad;
+                c.fillRect(0, 0, 512, 360);
+                c.strokeStyle = 'rgba(203,255,225,.10)';
+                c.lineWidth = 1;
+                for (let x = 18; x < 512; x += 28) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 360); c.stroke(); }
+                for (let y = 18; y < 360; y += 28) { c.beginPath(); c.moveTo(0, y); c.lineTo(512, y); c.stroke(); }
+
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillStyle = '#f5d77f';
+                c.font = '700 31px "Microsoft YaHei", sans-serif';
+                c.fillText('质因数分解机', 256, 35);
+                c.fillStyle = 'rgba(216,255,235,.75)';
+                c.font = '18px "Microsoft YaHei", sans-serif';
+                c.fillText('把合数一步一步拆开', 256, 67);
+
+                const nodes = [
+                    { x: 256, y: 112, t: '84', s: 0 },
+                    { x: 165, y: 178, t: '2', s: 1 },
+                    { x: 347, y: 178, t: '42', s: 1 },
+                    { x: 288, y: 248, t: '6', s: 2 },
+                    { x: 406, y: 248, t: '7', s: 2 },
+                    { x: 245, y: 318, t: '2', s: 3 },
+                    { x: 331, y: 318, t: '3', s: 3 }
+                ];
+                const links = [
+                    [256, 128, 165, 162, 1], [256, 128, 347, 162, 1],
+                    [347, 194, 288, 232, 2], [347, 194, 406, 232, 2],
+                    [288, 264, 245, 302, 3], [288, 264, 331, 302, 3]
+                ];
+                c.lineWidth = 5;
+                c.lineCap = 'round';
+                for (const l of links) {
+                    const on = progress >= l[4] / 3;
+                    c.strokeStyle = on ? '#83f0bd' : 'rgba(196,255,225,.20)';
+                    c.beginPath(); c.moveTo(l[0], l[1]); c.lineTo(l[2], l[3]); c.stroke();
+                }
+                for (const n of nodes) {
+                    const on = progress >= n.s / 3;
+                    c.beginPath();
+                    c.arc(n.x, n.y, n.t.length > 1 ? 28 : 23, 0, Math.PI * 2);
+                    c.fillStyle = on ? (n.s === 0 ? '#f5d77f' : '#dffff0') : '#315e54';
+                    c.fill();
+                    c.strokeStyle = on ? '#83f0bd' : '#4d8075';
+                    c.lineWidth = 3;
+                    c.stroke();
+                    c.fillStyle = on ? '#173b35' : '#9fc2b8';
+                    c.font = `800 ${n.t.length > 1 ? 25 : 27}px "Microsoft YaHei", sans-serif`;
+                    c.fillText(n.t, n.x, n.y + 1);
+                }
+                if (flash > 0) {
+                    c.fillStyle = `rgba(153,255,210,${flash * 0.38})`;
+                    c.fillRect(0, 0, 512, 360);
+                }
+                factorTexture.needsUpdate = true;
+            }
+            drawFactorScreen(1, 0);
+
+            const factorPrompt = document.getElementById('factorPrompt');
+            const factorScreenPos = new THREE.Vector3();
+            const factorState = { phase: 'idle', t0: 0, stage: 3, timer: 0 };
+            let factorLaunchStarted = false;
+
+            function startFactorPractice(playSound = true) {
+                if (factorLaunchStarted) return;
+                factorLaunchStarted = true;
+                factorState.phase = 'launch';
+                factorState.t0 = performance.now() * 0.001;
+                factorState.stage = -1;
+                factorPrompt.classList.remove('visible');
+                if (playSound) SND.play('magic');
+                factorState.timer = setTimeout(() => {
+                    const target = location.protocol === 'file:'
+                        ? 'https://chyahy.github.io/software-picks/prime-factor/'
+                        : new URL('../prime-factor/', location.href).href;
+                    window.location.href = target;
+                }, 1050);
+            }
+
+            function resetFactorMachine() {
+                if (factorState.timer) clearTimeout(factorState.timer);
+                factorState.timer = 0;
+                factorState.phase = 'idle';
+                factorState.t0 = 0;
+                factorState.stage = 3;
+                factorLaunchStarted = false;
+                factorMachineG.position.copy(FACTOR_HOME);
+                factorMachineG.scale.setScalar(1);
+                factorScreenPivot.position.set(0, 0.225, -0.005);
+                factorScreenPivot.rotation.set(-0.10, 0, 0);
+                drawFactorScreen(1, 0);
+            }
+
+            factorMachineG.userData.aimLabel = '启动质因数分解机';
+            factorMachineG.userData.sfx = 'magic';
+            regMagic(factorMachineG, () => startFactorPractice(false));
+            factorPrompt.addEventListener('click', () => startFactorPractice(true));
+            addEventListener('pageshow', () => {
+                if (factorLaunchStarted || factorState.phase !== 'idle') resetFactorMachine();
+            });
+
+            function updateFactorPrompt() {
+                if (factorLaunchStarted || fullHouse) {
+                    factorPrompt.classList.remove('visible');
+                    return;
+                }
+                factorScreen.getWorldPosition(factorScreenPos);
+                factorScreenPos.y += 0.23;
+                factorScreenPos.project(camera);
+                const visible = factorScreenPos.z > -1 && factorScreenPos.z < 1 && Math.abs(factorScreenPos.x) < 1.08 && Math.abs(factorScreenPos.y) < 1.08;
+                factorPrompt.style.left = ((factorScreenPos.x * .5 + .5) * innerWidth) + 'px';
+                factorPrompt.style.top = ((-.5 * factorScreenPos.y + .5) * innerHeight) + 'px';
+                factorPrompt.classList.toggle('visible', visible);
+            }
+
+            function updateFactorMachine(time) {
+                if (factorState.phase === 'idle') {
+                    factorGlowMat.opacity = 0.055 + (Math.sin(time * 2.4) * 0.5 + 0.5) * 0.055;
+                    factorScreenPivot.position.y = 0.225 + Math.sin(time * 1.8) * 0.003;
+                    return;
+                }
+                const e = time - factorState.t0;
+                const k = Math.min(1, e / 1.0);
+                factorMachineG.position.y = FACTOR_HOME.y + Math.sin(k * Math.PI) * 0.075;
+                factorMachineG.scale.setScalar(1 + Math.sin(k * Math.PI) * 0.055);
+                factorScreenPivot.rotation.z = Math.sin(e * 20) * (1 - k) * 0.025;
+                factorGlowMat.opacity = 0.16 + Math.sin(e * 18) * 0.07;
+                const stage = Math.min(3, Math.floor(e / 0.22));
+                if (stage !== factorState.stage) {
+                    factorState.stage = stage;
+                    drawFactorScreen(Math.max(0, stage) / 3, 1 - k);
                 }
             }
 
@@ -8516,6 +8741,7 @@
             const fireMagic = o => { SND.play(o.userData.sfx || 'toggle'); o.userData.onClick(); };
             const interactables = [
                 { x: DECK_HOME.x, z: DECK_HOME.z, r: 1.7, label: '拿起纸牌，进入24点游戏', act: start24PointGame },
+                { x: FACTOR_HOME.x, z: FACTOR_HOME.z, r: 1.6, label: '启动质因数分解机', act: () => startFactorPractice(true) },
                 { x: FX, z: FZ, r: 2.0, label: '点燃 / 熄灭壁炉', act: toggleFire },
                 { x: 0, z: 0, r: 2.4, label: '点亮 / 熄灭魔法吊灯', act: toggleLamp },
                 { x: 0, z: 4, r: 1.8, label: '打开 / 关上大门', act: () => toggleSpring(doorGroup) },
@@ -9941,6 +10167,7 @@
                 updateSnow(time, dt);
                 updateHourglass(time);
                 updateDeck(time);
+                updateFactorMachine(time);
                 updateBook(time, dt);
                 updateCal(dt);
                 updateGlyphs(time, dt);
@@ -10065,6 +10292,7 @@
                 }
 
                 updateDeckPrompt();
+                updateFactorPrompt();
                 renderer.render(scene, camera);
             }
             animate(0);
