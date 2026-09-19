@@ -38,4 +38,5 @@ await cp(join(root, "public/magic-24"), join(out, "magic-24"), { recursive: true
 await cp(join(root, "public/prime-factor"), join(out, "prime-factor"), { recursive: true });
 await cp(join(root, "public/cube-coloring"), join(out, "cube-coloring"), { recursive: true });
 await cp(join(root, "public/rational-numbers"), join(out, "rational-numbers"), { recursive: true });
+await cp(join(root, "public/dangdang"), join(out, "dangdang"), { recursive: true });
 console.log(`Built GitHub Pages site with ${software.length} software entries.`);
