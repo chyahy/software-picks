@@ -168,7 +168,7 @@
     else{givenLines=[{a:{x:W*.14,y:H*.72},b:{x:W*.48,y:H*.72},label:'示范线'}];taskPoint=null;}
     resetTriangles();
   }
-  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.52,y:H*.70},label:'参考线'}];taskPoint={x:W*.68,y:H*.58,label:'A'};userLines=[];resetTriangles()} }
+  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.62,y:H*.70},label:'参考线'}];taskPoint={x:W*.43,y:H*.62,label:'A'};userLines=[];resetTriangles()} }
   function setTool(next){tool=next;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));statusPill.innerHTML=tool==='move'?'<strong>移动工具：</strong>顶点靠近目标会点吸附；两条方向接近的边靠拢会整边吸附。':tool==='drag'?'<strong>沿边拖画：</strong>从三角板边上按住并沿边拖动，松开完成线段。':'<strong>点边画整条：</strong>直接点击三角板任意一条边，自动画出整条直线。'}
   function findHit(p){
     const vertexHits=[];
@@ -324,8 +324,8 @@
       if(demoStep===2){tri([fixedR,fixedP,fixedQ],palette.amber);rightMark(fixedR,fixedP,fixedQ);dot(fixedR,palette.pin);glow(fixedR,fixedQ)}
       if(demoStep>=3){tri([finalR,finalP,finalQ],palette.amber);rightMark(finalR,finalP,finalQ);glow(finalR,finalQ);glow(finalP,finalR);if(demoStep===3)arrow({x:fixedR.x,y:baseY-28},{x:finalR.x,y:baseY-28},'沿直线平移');if(demoStep===4)line({x:A.x,y:Math.max(24,A.y-leg*.45)},{x:A.x,y:baseY+48},palette.coral,5);dot(A)}
     }else{
-      const leg=Math.min(w*.23,h*.27),B={x:w*.68,y:baseY-leg*.82};dot(B);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+13,B.y-8);
-      const R={x:w*.36,y:baseY},P={x:R.x,y:baseY-leg},Q={x:R.x+leg,y:baseY},L={x:R.x-leg*.78,y:baseY};
+      const leg=Math.min(w*.23,h*.27),R={x:w*.36,y:baseY},P={x:R.x,y:baseY-leg},Q={x:R.x+leg,y:baseY},L={x:R.x-leg*.78,y:baseY};
+      const B={x:R.x+leg*.62,y:baseY-leg*.82};dot(B);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+13,B.y-8);
       const initialR={x:w*.70,y:baseY-leg*.60},initialP={x:initialR.x,y:initialR.y-leg},initialQ={x:initialR.x+leg,y:initialR.y};
       const firstTilt=[R,rotateAround(P,R,-.43),rotateAround(Q,R,-.43)];
       const supportTilt=[R,rotateAround(P,R,.70),rotateAround(L,R,.70)];
