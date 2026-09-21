@@ -6,8 +6,6 @@
     <title>正方体涂色探索｜鲁老师 × 当当老师</title>
     <meta name="description" content="鲁老师 × 当当老师联合课堂：可旋转、可炸开的正方体表面涂色互动实验。">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <!-- Tailwind CSS -->
-    <script src="./assets/tailwind.js?v=2026.09.18.1"></script>
     <!-- Three.js -->
     <script src="./assets/three.min.js?v=2026.09.18.1"></script>
     <!-- OrbitControls -->
@@ -15,6 +13,80 @@
     <!-- GSAP -->
     <script src="./assets/gsap.min.js?v=2026.09.18.1"></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        button, input { font: inherit; }
+        button { border: 0; color: inherit; cursor: pointer; }
+        .block { display: block; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-3 { gap: .75rem; }
+        .w-full { width: 100%; }
+        .w-8 { width: 2rem; }
+        .w-4 { width: 1rem; }
+        .h-4 { height: 1rem; }
+        .p-2 { padding: .5rem; }
+        .py-2 { padding-top: .5rem; padding-bottom: .5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: .25rem; }
+        .mb-2 { margin-bottom: .5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .pb-1 { padding-bottom: .25rem; }
+        .pb-2 { padding-bottom: .5rem; }
+        .space-y-1 > * + * { margin-top: .25rem; }
+        .space-y-3 > * + * { margin-top: .75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .rounded { border-radius: .25rem; }
+        .rounded-lg { border-radius: .5rem; }
+        .border-b { border-bottom-width: 1px; border-bottom-style: solid; }
+        .border-white\/20 { border-color: rgba(255,255,255,.2); }
+        .border-red-500 { border-color: #ef4444; }
+        .border-green-500 { border-color: #22c55e; }
+        .border-yellow-500 { border-color: #eab308; }
+        .border-gray-400 { border-color: #9ca3af; }
+        .bg-white\/5 { background: rgba(255,255,255,.05); }
+        .bg-red-500 { background: #ef4444; }
+        .bg-green-500 { background: #22c55e; }
+        .bg-yellow-500 { background: #eab308; }
+        .bg-gray-400 { background: #9ca3af; }
+        .bg-blue-900\/30 { background: rgba(30,58,138,.3); }
+        .bg-blue-600 { background: #2563eb; }
+        .bg-gray-700 { background: #374151; }
+        .bg-slate-700 { background: #334155; }
+        .text-center { text-align: center; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-sm { font-size: .875rem; line-height: 1.25rem; }
+        .text-xs { font-size: .75rem; line-height: 1rem; }
+        .text-\[11px\] { font-size: 11px; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        .leading-relaxed { line-height: 1.625; }
+        .opacity-70 { opacity: .7; }
+        .opacity-80 { opacity: .8; }
+        .text-white\/60 { color: rgba(255,255,255,.6); }
+        .text-purple-300 { color: #d8b4fe; }
+        .text-blue-200 { color: #bfdbfe; }
+        .text-blue-300 { color: #93c5fd; }
+        .text-red-400 { color: #f87171; }
+        .text-green-400 { color: #4ade80; }
+        .text-yellow-400 { color: #facc15; }
+        .text-gray-300 { color: #d1d5db; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,.22); }
+        .accent-red-500 { accent-color: #ef4444; }
+        .accent-green-500 { accent-color: #22c55e; }
+        .accent-yellow-500 { accent-color: #eab308; }
+        .accent-gray-400 { accent-color: #9ca3af; }
+        #explodeBtn:hover { background: #3b82f6; }
+        #resetBtn:hover { background: #4b5563; }
+        #mobileFilterBtn:hover { background: #475569; }
+        #ruleBtn { background: linear-gradient(to right, #9333ea, #4f46e5); }
+        #ruleBtn:hover { background: linear-gradient(to right, #a855f7, #6366f1); }
+        #closeRuleBtn:hover { color: #fff; }
         body {
             margin: 0;
             overflow: hidden;
@@ -180,11 +252,94 @@
             transition: transform .2s ease, background .2s ease;
         }
         .room-back:hover, .room-back:focus-visible { transform: translateY(-2px); background: rgba(76, 29, 149, .78); outline: none; }
+        .mobile-filter-btn { display: none; }
+        .secondary-actions { margin-bottom: 1.5rem; }
         @media (max-width: 720px) {
-            .ui-panel { top: 10px; left: 10px; width: min(280px, calc(100vw - 20px)); max-height: calc(100vh - 20px); overflow-y: auto; }
-            .teacher-brand { font-size: 11px; padding-right: 8px; }
-            .brand-cube { width: 26px; height: 26px; }
-            .room-back { top: auto; right: 10px; bottom: 10px; padding: 9px 12px; }
+            .ui-panel {
+                top: 8px;
+                left: 8px;
+                right: 8px;
+                width: auto;
+                max-height: none;
+                overflow: visible;
+                padding: 10px 12px;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, .82);
+            }
+            .ui-panel > .panel-head {
+                align-items: center;
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            .ui-panel h2 { font-size: 16px; line-height: 1; }
+            .teacher-brand { font-size: 10px; padding: 4px 7px 4px 5px; gap: 5px; }
+            .brand-cube { width: 23px; height: 23px; border-radius: 7px; font-size: 8px; }
+            .size-control {
+                display: grid;
+                grid-template-columns: auto minmax(90px, 1fr);
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            .size-control > label { margin: 0; font-size: 11px; white-space: nowrap; }
+            .size-control .slider-container { gap: 8px; }
+            .primary-actions { gap: 7px; margin-bottom: 7px; }
+            .primary-actions button, .secondary-actions button { min-height: 34px; padding: 6px 7px; font-size: 11px; }
+            .secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 0; }
+            .secondary-actions #ruleBtn { margin-bottom: 0; }
+            .mobile-filter-btn { display: block; }
+            .filter-panel {
+                position: absolute;
+                top: calc(100% + 7px);
+                left: 0;
+                right: 0;
+                display: none;
+                grid-template-columns: 1fr 1fr;
+                gap: 7px;
+                padding: 9px;
+                border: 1px solid rgba(255,255,255,.18);
+                border-radius: 13px;
+                background: rgba(15, 23, 42, .94);
+                box-shadow: 0 18px 45px rgba(2, 6, 23, .42);
+                backdrop-filter: blur(14px);
+            }
+            .ui-panel.filters-open .filter-panel { display: grid; }
+            .filter-panel > div { padding: 7px; }
+            .filter-panel .text-sm { font-size: 11px; }
+            .stats-panel {
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                display: block;
+                padding: 8px 10px;
+                border-radius: 11px;
+                background: rgba(0, 0, 0, .58);
+            }
+            .stats-panel h3 { display: none; }
+            .stats-panel > div {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 4px;
+                text-align: center;
+            }
+            .stats-panel p { margin: 0; font-size: 9px; line-height: 1.25; }
+            .stats-panel p span { display: block; margin-top: 2px; font-size: 12px; }
+            .room-back { top: auto; right: 9px; bottom: 58px; padding: 8px 10px; font-size: 11px; }
+            .rule-panel {
+                position: fixed;
+                inset: 8px;
+                width: auto;
+                max-height: calc(100dvh - 16px);
+                overflow-y: auto;
+                padding: 15px;
+                border-radius: 14px;
+            }
+        }
+        @media (max-width: 390px) {
+            .teacher-brand span:last-child { display: none; }
+            .teacher-brand { padding-right: 5px; }
         }
     </style>
 
@@ -194,7 +349,7 @@
     <div id="canvas-container"></div>
 
     <div class="ui-panel">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4 panel-head">
             <h2 class="text-xl title-gradient">探索图形</h2>
             <div class="teacher-brand" aria-label="鲁老师与当当老师联合课堂">
                 <span class="brand-cube" aria-hidden="true">立方</span>
@@ -202,7 +357,7 @@
             </div>
         </div>
         
-        <div class="mb-6">
+        <div class="mb-6 size-control">
             <label class="block text-sm mb-2 opacity-80">模型参数 (a&times;a&times;a)</label>
             <div class="slider-container flex items-center gap-3">
                 <input type="range" id="sizeSlider" min="2" max="10" value="3">
@@ -210,13 +365,16 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="grid grid-cols-2 gap-3 mb-6 primary-actions">
             <button id="explodeBtn" class="control-btn bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-sm font-medium">炸开演示</button>
             <button id="resetBtn" class="control-btn bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium">重置视图</button>
         </div>
-        <button id="ruleBtn" class="w-full control-btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-2 rounded-lg text-sm font-bold mb-6 shadow-lg">查看规律公式</button>
+        <div class="secondary-actions">
+            <button id="ruleBtn" class="w-full control-btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-2 rounded-lg text-sm font-bold mb-6 shadow-lg">查看规律公式</button>
+            <button id="mobileFilterBtn" class="mobile-filter-btn w-full control-btn bg-slate-700 hover:bg-slate-600 py-2 rounded-lg text-sm font-bold" aria-expanded="false">筛选方块</button>
+        </div>
 
-        <div class="space-y-3">
+        <div class="space-y-3 filter-panel">
             <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
                 <div class="flex items-center">
                     <span class="color-tag bg-red-500"></span>
@@ -294,6 +452,43 @@
         let isExploded = false;
         const spacing = 1.05;
 
+        function fitCamera(animateMove = true) {
+            if (!camera || !controls) return;
+
+            const isMobile = window.innerWidth <= 720;
+            const halfModel = ((n - 1) * spacing + 0.95) / 2;
+            const explodedPadding = isExploded ? 2.35 : 0;
+            const radius = halfModel + explodedPadding + 0.65;
+            const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+            const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
+            const limitingFov = Math.max(0.22, Math.min(verticalFov, horizontalFov));
+            const distance = Math.max(isMobile ? 12 : 9, radius / Math.tan(limitingFov / 2) * (isMobile ? 1.36 : 1.22));
+            const target = new THREE.Vector3(0, isMobile ? 0.45 : 0, 0);
+            const direction = new THREE.Vector3(0.68, 0.63, 1).normalize();
+            const destination = target.clone().add(direction.multiplyScalar(distance));
+
+            if (animateMove) {
+                gsap.to(camera.position, {
+                    x: destination.x,
+                    y: destination.y,
+                    z: destination.z,
+                    duration: 0.75,
+                    ease: "power2.inOut"
+                });
+                gsap.to(controls.target, {
+                    x: target.x,
+                    y: target.y,
+                    z: target.z,
+                    duration: 0.75,
+                    ease: "power2.inOut"
+                });
+            } else {
+                camera.position.copy(destination);
+                controls.target.copy(target);
+                controls.update();
+            }
+        }
+
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a2e);
@@ -303,7 +498,7 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -317,6 +512,7 @@
             scene.add(directionalLight);
 
             createCubes();
+            fitCamera(false);
             animate();
         }
 
@@ -400,6 +596,9 @@
             isExploded = !isExploded;
             const btn = document.getElementById('explodeBtn');
             btn.innerText = isExploded ? "合拢演示" : "炸开演示";
+            document.querySelector('.ui-panel').classList.remove('filters-open');
+            document.getElementById('mobileFilterBtn').setAttribute('aria-expanded', 'false');
+            document.getElementById('mobileFilterBtn').innerText = '筛选方块';
 
             cubes.forEach(cube => {
                 const targetPos = isExploded 
@@ -414,6 +613,7 @@
                     ease: "power2.inOut"
                 });
             });
+            fitCamera(true);
         }
 
         function updateVisibility() {
@@ -451,6 +651,8 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+            fitCamera(false);
         });
 
         document.getElementById('sizeSlider').addEventListener('input', (e) => {
@@ -459,12 +661,20 @@
             isExploded = false;
             document.getElementById('explodeBtn').innerText = "炸开演示";
             createCubes();
+            fitCamera(true);
         });
 
         document.getElementById('explodeBtn').addEventListener('click', toggleExplode);
         document.getElementById('resetBtn').addEventListener('click', () => {
-            gsap.to(camera.position, { x: 8, y: 8, z: 12, duration: 1 });
-            controls.target.set(0, 0, 0);
+            fitCamera(true);
+        });
+
+        const mobileFilterBtn = document.getElementById('mobileFilterBtn');
+        const uiPanel = document.querySelector('.ui-panel');
+        mobileFilterBtn.addEventListener('click', () => {
+            const opened = uiPanel.classList.toggle('filters-open');
+            mobileFilterBtn.setAttribute('aria-expanded', String(opened));
+            mobileFilterBtn.innerText = opened ? '收起筛选' : '筛选方块';
         });
 
         ['toggle3', 'toggle2', 'toggle1', 'toggle0'].forEach(id => {
