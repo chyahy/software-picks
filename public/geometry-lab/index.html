@@ -162,20 +162,20 @@
   function resetTriangles(){const narrow=W<500;triangles[0].x=W*(narrow ? .32 : .37);triangles[0].y=H*(narrow ? .67 : .64);triangles[0].angle=-.08;triangles[0].snap=null;triangles[0].anchor=null;triangles[1].x=W*(narrow ? .69 : .70);triangles[1].y=H*(narrow ? .45 : .56);triangles[1].angle=.18;triangles[1].snap=null;triangles[1].anchor=null;selectedTri=0;interaction=null;draw();updateSteps()}
   function setupTask(type=currentTask){
     currentTask=type;taskSelect.value=type;taskText.textContent=tasks[type].text;userLines=[];history=[];resultBox.className='resultBox';resultBox.innerHTML='<h3>还没有检查</h3><p>完成作图后点击“检查作图”，我会告诉你角度是否正确。</p>';
-    const y=H*.55;
-    if(type==='perpendicular'){givenLines=[{a:{x:W*.16,y},b:{x:W*.84,y},label:'l'}];taskPoint={x:W*.57,y:H*.27,label:'A'};}
-    else if(type==='parallel'){givenLines=[{a:{x:W*.16,y:H*.62},b:{x:W*.76,y:H*.43},label:'m'}];taskPoint={x:W*.56,y:H*.24,label:'B'};}
+    const y=H*.60;
+    if(type==='perpendicular'){givenLines=[{a:{x:W*.16,y},b:{x:W*.84,y},label:'l'}];taskPoint={x:W*.57,y:H*.38,label:'A'};}
+    else if(type==='parallel'){givenLines=[{a:{x:W*.16,y:H*.64},b:{x:W*.76,y:H*.49},label:'m'}];taskPoint={x:W*.56,y:H*.39,label:'B'};}
     else{givenLines=[{a:{x:W*.14,y:H*.72},b:{x:W*.48,y:H*.72},label:'示范线'}];taskPoint=null;}
     resetTriangles();
   }
-  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.72},b:{x:W*.46,y:H*.72},label:'参考线'}];taskPoint={x:W*.68,y:H*.28,label:'A'};userLines=[];resetTriangles()} }
+  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.52,y:H*.70},label:'参考线'}];taskPoint={x:W*.68,y:H*.47,label:'A'};userLines=[];resetTriangles()} }
   function setTool(next){tool=next;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));statusPill.innerHTML=tool==='move'?'<strong>移动工具：</strong>顶点靠近目标会点吸附；两条方向接近的边靠拢会整边吸附。':tool==='drag'?'<strong>沿边拖画：</strong>从三角板边上按住并沿边拖动，松开完成线段。':'<strong>点边画整条：</strong>直接点击三角板任意一条边，自动画出整条直线。'}
   function findHit(p){
     for(let ti=triangles.length-1;ti>=0;ti--){const t=triangles[ti],v=verts(t),h=rotationHandle(t);if(dist(p,h)<19)return{kind:'rotate',ti};for(let vi=0;vi<3;vi++)if(dist(p,v[vi])<16)return{kind:'vertex',ti,vi};for(const [a,b,ei] of triEdges(t)){const q=pointSeg(p,a,b);if(q.d<14)return{kind:'edge',ti,ei,proj:q.p}}if(inPoly(p,v))return{kind:'body',ti}}
     return null;
   }
   function snapTriangle(t,ti){
-    const threshold=16,edgeThreshold=14;let best=null,edgeBest=null;const v=verts(t);
+    const threshold=16,edgeThreshold=6;let best=null,edgeBest=null;const v=verts(t);
     function consider(vertex,point,d,label,extra={}){if(d<threshold&&(!best||d<best.d))best={vertex,point:{x:point.x,y:point.y},d,label,...extra}}
     v.forEach((p,vi)=>{
       if(taskPoint)consider(vi,taskPoint,dist(p,taskPoint),`题目点 ${taskPoint.label}`);
@@ -187,7 +187,7 @@
     triangles.forEach((other,oi)=>{if(oi!==ti)triEdges(other).forEach(([a,b])=>targets.push({a,b,label:'另一块三角板的边',long:false}))});
     triEdges(t).forEach(([sa,sb,edge])=>targets.forEach(target=>{
       let delta=angleOf(target.a,target.b)-angleOf(sa,sb);while(delta>Math.PI/2)delta-=Math.PI;while(delta<-Math.PI/2)delta+=Math.PI;
-      if(Math.abs(delta)>Math.PI/24)return;
+      if(Math.abs(delta)>Math.PI/60)return;
       const d=target.long?Math.min(pointLine(sa,target.a,target.b).d,pointLine(sb,target.a,target.b).d):Math.min(pointSeg(sa,target.a,target.b).d,pointSeg(sb,target.a,target.b).d,pointSeg(target.a,sa,sb).d,pointSeg(target.b,sa,sb).d);
       if(d<edgeThreshold&&(!edgeBest||d<edgeBest.d))edgeBest={edge,target,delta,d};
     }));
@@ -198,11 +198,16 @@
       const now=verts(t)[best.vertex];t.x+=best.point.x-now.x;t.y+=best.point.y-now.y;
       if(best.targetEdge){
         const targetAngle=angleOf(best.targetEdge[0],best.targetEdge[1]);let align=null;
-        triEdges(t).forEach(([a,b,ei])=>{if(![ei,(ei+1)%3].includes(best.vertex))return;let delta=targetAngle-angleOf(a,b);while(delta>Math.PI/2)delta-=Math.PI;while(delta<-Math.PI/2)delta+=Math.PI;if(Math.abs(delta)<Math.PI/24&&(!align||Math.abs(delta)<Math.abs(align.delta)))align={delta}});
+        triEdges(t).forEach(([a,b,ei])=>{if(![ei,(ei+1)%3].includes(best.vertex))return;let delta=targetAngle-angleOf(a,b);while(delta>Math.PI/2)delta-=Math.PI;while(delta<-Math.PI/2)delta+=Math.PI;if(Math.abs(delta)<Math.PI/60&&(!align||Math.abs(delta)<Math.abs(align.delta)))align={delta}});
         if(align){t.angle+=align.delta;const local=scaledLocal(t,best.vertex),q=rot(local,t.angle);t.x=best.point.x-q.x;t.y=best.point.y-q.y;best.label='另一块三角板的边（两边已对齐）'}
       }
       t.snap=best;showToast(`已吸附到${best.label}，点击发光点可以固定`,'ok',1100)
     }else t.snap=null;
+  }
+  function snapAnchoredEdge(t,ti){
+    if(!t.anchor)return false;const ap=t.anchor.point,targets=[];givenLines.concat(userLines).forEach(l=>targets.push({a:l.a,b:l.b,label:'直线',long:true}));triangles.forEach((other,oi)=>{if(oi!==ti)triEdges(other).forEach(([a,b])=>targets.push({a,b,label:'另一块三角板的边',long:false}))});let best=null;
+    triEdges(t).forEach(([a,b,edge])=>{if(![edge,(edge+1)%3].includes(t.anchor.vertex))return;targets.forEach(target=>{const near=target.long?pointLine(ap,target.a,target.b).d:pointSeg(ap,target.a,target.b).d;if(near>7)return;let delta=angleOf(target.a,target.b)-angleOf(a,b);while(delta>Math.PI/2)delta-=Math.PI;while(delta<-Math.PI/2)delta+=Math.PI;if(Math.abs(delta)<=Math.PI/60&&(!best||Math.abs(delta)<Math.abs(best.delta)))best={edge,target,delta}})});
+    if(!best)return false;t.angle+=best.delta;const local=scaledLocal(t,t.anchor.vertex),q=rot(local,t.angle);t.x=ap.x-q.x;t.y=ap.y-q.y;t.snap={vertex:t.anchor.vertex,edge:best.edge,point:{...ap},targetEdge:[best.target.a,best.target.b],label:best.target.label+'（固定点不动，整条边已贴合）'};showToast('固定点保持不动，直角边已与目标边重合','ok',1200);return true;
   }
   function pinVertex(t,vi){
     const p=verts(t)[vi];if(t.anchor&&t.anchor.vertex===vi){t.anchor=null;showToast('已解除固定点');}
@@ -232,7 +237,7 @@
     if(!interaction)return;e.preventDefault();const p=getPoint(e),t=triangles[interaction.ti];
     if(interaction.kind==='move'){t.x=p.x-interaction.dx;t.y=p.y-interaction.dy;t.snap=null;snapTriangle(t,interaction.ti)}
     else if(interaction.kind==='rotate'){t.angle=interaction.startAngle+Math.atan2(p.y-t.y,p.x-t.x)-interaction.startPointer;t.snap=null;}
-    else if(interaction.kind==='anchorRotate'){const ap=t.anchor.point;t.angle=interaction.startAngle+Math.atan2(p.y-ap.y,p.x-ap.x)-interaction.startPointer;const local=scaledLocal(t,t.anchor.vertex),q=rot(local,t.angle);t.x=ap.x-q.x;t.y=ap.y-q.y;t.snap={vertex:t.anchor.vertex,point:{...ap},label:'固定点'};}
+    else if(interaction.kind==='anchorRotate'){const ap=t.anchor.point;t.angle=interaction.startAngle+Math.atan2(p.y-ap.y,p.x-ap.x)-interaction.startPointer;const local=scaledLocal(t,t.anchor.vertex),q=rot(local,t.angle);t.x=ap.x-q.x;t.y=ap.y-q.y;t.snap={vertex:t.anchor.vertex,point:{...ap},label:'固定点'};snapAnchoredEdge(t,interaction.ti);}
     else if(interaction.kind==='draw'){const [a,b]=triEdges(t)[interaction.ei];const q=pointSeg(p,a,b).p;interaction.preview={a:interaction.start,b:q};}
     updateSteps();draw();
   }
@@ -278,13 +283,13 @@
     const rightMark=(r,p,q)=>{const u={x:(p.x-r.x),y:(p.y-r.y)},v={x:(q.x-r.x),y:(q.y-r.y)},ul=Math.max(1,Math.hypot(u.x,u.y)),vl=Math.max(1,Math.hypot(v.x,v.y)),s=17,a={x:r.x+u.x/ul*s,y:r.y+u.y/ul*s},c={x:r.x+v.x/vl*s,y:r.y+v.y/vl*s},b={x:a.x+v.x/vl*s,y:a.y+v.y/vl*s};dctx.beginPath();dctx.moveTo(a.x,a.y);dctx.lineTo(b.x,b.y);dctx.lineTo(c.x,c.y);dctx.strokeStyle=palette.navy;dctx.lineWidth=2;dctx.stroke()};
     const baseY=h*.72,baseA={x:w*.12,y:baseY},baseB={x:w*.88,y:baseY};line(baseA,baseB,'#9b3d3d',5);dctx.fillStyle=palette.navy;dctx.font='italic 700 17px Georgia';dctx.fillText(currentTask==='perpendicular'?'l':'m',w*.85,baseY-10);
     if(currentTask==='perpendicular'){
-      const A={x:w*.47,y:h*.28};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(A.x,A.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+12,A.y-8);
-      if(demoStep>=1){const rY=demoStep===1?baseY-42:baseY,R={x:A.x,y:rY},P={x:A.x,y:h*.18},Q={x:A.x+w*.28,y:rY};tri([R,P,Q],palette.amber);rightMark(R,P,Q);glow(P,R);if(demoStep>=2)glow(R,Q);if(demoStep>=3)line({x:A.x,y:h*.10},{x:A.x,y:h*.88},palette.coral,5)}
+      const leg=Math.min(w*.30,h*.32),A={x:w*.47,y:baseY-leg*.68};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(A.x,A.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+12,A.y-8);
+      if(demoStep>=1){const rY=demoStep===1?baseY-30:baseY,R={x:A.x,y:rY},P={x:A.x,y:rY-leg},Q={x:A.x+leg,y:rY};tri([R,P,Q],palette.amber);rightMark(R,P,Q);glow(P,R);if(demoStep>=2)glow(R,Q);if(demoStep>=3)line({x:A.x,y:baseY-leg-28},{x:A.x,y:baseY+55},palette.coral,5)}
     }else{
-      const B={x:w*.68,y:h*.28};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(B.x,B.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+12,B.y-8);
-      const x=w*.43,top=baseY-h*.25,Q={x:w*.80,y:baseY},R={x,y:baseY},P={x,y:top};
+      const leg=Math.min(w*.30,h*.27),B={x:w*.62,y:baseY-leg*.80};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(B.x,B.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+12,B.y-8);
+      const x=w*.43,top=baseY-leg,Q={x:x+leg,y:baseY},R={x,y:baseY},P={x,y:top};
       if(demoStep>=1){if(demoStep<3){tri([R,P,Q],palette.amber);glow(R,Q)}else{const dy=B.y-baseY,R2={x:R.x,y:R.y+dy},P2={x:P.x,y:P.y+dy},Q2={x:Q.x,y:Q.y+dy};tri([R2,P2,Q2],palette.amber);glow(R2,Q2);line({x:w*.13,y:B.y},{x:w*.88,y:B.y},palette.coral,5)}rightMark(demoStep<3?R:{x:R.x,y:B.y},demoStep<3?P:{x:P.x,y:P.y+B.y-baseY},demoStep<3?Q:{x:Q.x,y:B.y})}
-      if(demoStep>=2){const L={x:w*.20,y:baseY};tri([R,P,L],palette.teal);glow(P,R)}
+      if(demoStep>=2){const L={x:x-leg*.78,y:baseY};tri([R,P,L],palette.teal);glow(P,R)}
       if(demoStep===3){dctx.strokeStyle=palette.navy;dctx.lineWidth=2;dctx.setLineDash([7,7]);dctx.beginPath();dctx.moveTo(x+w*.05,baseY-h*.03);dctx.lineTo(x+w*.05,B.y+h*.03);dctx.stroke();dctx.setLineDash([]);dctx.fillStyle=palette.navy;dctx.font='700 13px Microsoft YaHei';dctx.fillText('沿贴合边向上滑动',x+w*.07,(baseY+B.y)/2)}
     }
   }
