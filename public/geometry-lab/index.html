@@ -171,7 +171,11 @@
   function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.52,y:H*.70},label:'参考线'}];taskPoint={x:W*.68,y:H*.58,label:'A'};userLines=[];resetTriangles()} }
   function setTool(next){tool=next;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));statusPill.innerHTML=tool==='move'?'<strong>移动工具：</strong>顶点靠近目标会点吸附；两条方向接近的边靠拢会整边吸附。':tool==='drag'?'<strong>沿边拖画：</strong>从三角板边上按住并沿边拖动，松开完成线段。':'<strong>点边画整条：</strong>直接点击三角板任意一条边，自动画出整条直线。'}
   function findHit(p){
-    for(let ti=triangles.length-1;ti>=0;ti--){const t=triangles[ti],v=verts(t),h=rotationHandle(t);if(dist(p,h)<19)return{kind:'rotate',ti};for(let vi=0;vi<3;vi++)if(dist(p,v[vi])<16)return{kind:'vertex',ti,vi};for(const [a,b,ei] of triEdges(t)){const q=pointSeg(p,a,b);if(q.d<14)return{kind:'edge',ti,ei,proj:q.p}}if(inPoly(p,v))return{kind:'body',ti}}
+    const vertexHits=[];
+    triangles.forEach((t,ti)=>verts(t).forEach((v,vi)=>{const d=dist(p,v);if(d<20){const priority=(t.anchor?.vertex===vi?12:0)+(t.snap?.vertex===vi?8:0)+(ti===selectedTri?2:0);vertexHits.push({kind:'vertex',ti,vi,d,score:d-priority})}}));
+    if(vertexHits.length){vertexHits.sort((a,b)=>a.score-b.score||a.d-b.d);return vertexHits[0]}
+    for(let ti=triangles.length-1;ti>=0;ti--){const t=triangles[ti],h=rotationHandle(t);if(dist(p,h)<19)return{kind:'rotate',ti}}
+    for(let ti=triangles.length-1;ti>=0;ti--){const t=triangles[ti],v=verts(t);for(const [a,b,ei] of triEdges(t)){const q=pointSeg(p,a,b);if(q.d<14)return{kind:'edge',ti,ei,proj:q.p}}if(inPoly(p,v))return{kind:'body',ti}}
     return null;
   }
   function snapTriangle(t,ti){
