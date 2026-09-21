@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#173b57">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>平行与垂直实验室｜鲁老师 × 当当老师</title>
   <style>
     :root{--navy:#173b57;--navy2:#0d2b43;--paper:#f7f1e5;--paper2:#fffaf0;--amber:#efb747;--teal:#2d8f8b;--coral:#e66a4f;--pin:#d93f5d;--muted:#6d7b80;--line:#d9d0bf;--white:#fff;--shadow:0 18px 55px rgba(27,49,62,.15)}
@@ -91,6 +94,7 @@
 </div>
 <script>
 (() => {
+  window.addEventListener('pageshow',e=>{if(e.persisted)window.location.reload()});
   const canvas = document.getElementById('board');
   const ctx = canvas.getContext('2d');
   const stage = document.getElementById('stagePanel');
