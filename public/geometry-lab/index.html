@@ -66,7 +66,7 @@
       <div class="toast" id="toast"></div>
       <div class="demoPanel" id="demoPanel">
         <div class="demoVisual"><canvas class="demoCanvas" id="demoCanvas"></canvas></div>
-        <div class="demoCopy"><small id="demoIndex">STEP 1 / 4</small><h2 id="demoTitle">先找到已知直线</h2><p id="demoText">观察题目给出的直线和直线外一点，想一想哪条边应该经过这个点。</p><div class="demoNav"><button id="demoClose">退出演示</button><button class="primary" id="demoNext">下一步</button></div></div>
+        <div class="demoCopy"><small id="demoIndex">STEP 1 / 5</small><h2 id="demoTitle">先让三角板歪着靠近</h2><p id="demoText">三角板先不要摆正，准备先让一个顶点吸附到已知直线。</p><div class="demoNav"><button id="demoClose">退出演示</button><button class="primary" id="demoNext">下一步</button></div></div>
       </div>
     </section>
 
@@ -229,7 +229,8 @@
     pushHistory();
     if(hit.kind==='rotate'){interaction={kind:'rotate',ti:hit.ti,startPointer:Math.atan2(p.y-t.y,p.x-t.x),startAngle:t.angle};}
     else if(hit.kind==='body'||hit.kind==='edge'){
-      if(t.anchor){const ap=t.anchor.point;interaction={kind:'anchorRotate',ti:hit.ti,startPointer:Math.atan2(p.y-ap.y,p.x-ap.x),startAngle:t.angle};}
+      if(t.anchor&&Number.isInteger(t.snap?.edge)&&t.snap?.targetEdge){const [a,b]=t.snap.targetEdge,len=Math.max(1,dist(a,b)),ux=(b.x-a.x)/len,uy=(b.y-a.y)/len;interaction={kind:'edgeSlide',ti:hit.ti,start:{x:p.x,y:p.y},center:{x:t.x,y:t.y},ux,uy,edge:t.snap.edge,targetEdge:t.snap.targetEdge};t.anchor=null;showToast('固定点已释放，现在沿重合的边平移','ok')}
+      else if(t.anchor){const ap=t.anchor.point;interaction={kind:'anchorRotate',ti:hit.ti,startPointer:Math.atan2(p.y-ap.y,p.x-ap.x),startAngle:t.angle};}
       else interaction={kind:'move',ti:hit.ti,dx:p.x-t.x,dy:p.y-t.y};
     }draw();
   }
@@ -238,6 +239,7 @@
     if(interaction.kind==='move'){t.x=p.x-interaction.dx;t.y=p.y-interaction.dy;t.snap=null;snapTriangle(t,interaction.ti)}
     else if(interaction.kind==='rotate'){t.angle=interaction.startAngle+Math.atan2(p.y-t.y,p.x-t.x)-interaction.startPointer;t.snap=null;}
     else if(interaction.kind==='anchorRotate'){const ap=t.anchor.point;t.angle=interaction.startAngle+Math.atan2(p.y-ap.y,p.x-ap.x)-interaction.startPointer;const local=scaledLocal(t,t.anchor.vertex),q=rot(local,t.angle);t.x=ap.x-q.x;t.y=ap.y-q.y;t.snap={vertex:t.anchor.vertex,point:{...ap},label:'固定点'};snapAnchoredEdge(t,interaction.ti);}
+    else if(interaction.kind==='edgeSlide'){const dx=p.x-interaction.start.x,dy=p.y-interaction.start.y,s=dx*interaction.ux+dy*interaction.uy;t.x=interaction.center.x+s*interaction.ux;t.y=interaction.center.y+s*interaction.uy;t.snap={edge:interaction.edge,targetEdge:interaction.targetEdge,label:'沿重合边平移中'};}
     else if(interaction.kind==='draw'){const [a,b]=triEdges(t)[interaction.ei];const q=pointSeg(p,a,b).p;interaction.preview={a:interaction.start,b:q};}
     updateSteps();draw();
   }
@@ -268,12 +270,34 @@
 
   const demoPanel=document.getElementById('demoPanel'),demoCanvas=document.getElementById('demoCanvas'),dctx=demoCanvas.getContext('2d');
   const demoData={
-    perpendicular:[['看清直线与点','观察已知直线 l 和直线外一点 A。要用三角板的两个直角边完成定位。'],['一条直角边经过 A','先让三角板的一条直角边经过点 A，此时先不要画线。'],['另一条直角边贴住 l','保持第一条直角边经过 A，再移动三角板，让另一条直角边整条吸附在直线 l 上。'],['沿经过 A 的边画线','沿经过 A 的直角边画线。因为两条直角边互相垂直，所以新线一定垂直于 l。']],
-    parallel:[['看清直线与点','观察已知直线 m 和直线外一点 B。平行作图需要两把三角板配合。'],['第一块板贴住 m','让工作三角板的一条边整条吸附在直线 m 上，方向由 m 决定。'],['第二块板与它边对边贴合','把辅助三角板贴到工作三角板的另一条边，吸附后按住辅助三角板不动。'],['滑到 B 点再画线','让工作三角板沿辅助板的贴合边滑动，直到原来贴住 m 的边经过 B，再沿这条边画线。']],
-    double:[['沿边画第一条线','先让工作三角板的一条边贴住参考线，并沿这条边画出第一条直线。'],['两块板边对边吸附','把辅助三角板的一条边与工作三角板的侧边整条贴合。'],['按住辅助板再平移','保持辅助三角板不动，让工作三角板沿贴合边滑动，方向不会改变。'],['沿同一条边画第二条线','沿工作三角板原来的边画线，新旧两条线方向相同，所以互相平行。']]
+    perpendicular:[
+      ['先让三角板歪着靠近','三角板先不要摆正。观察直线 l 和直线外一点 A，准备先固定一个顶点。'],
+      ['一个顶点吸附到直线','把三角板的直角顶点靠近直线 l，出现吸附提示后点击这个顶点把它固定住。'],
+      ['绕固定点旋转到重合','拖动三角板的其他位置，让它绕固定点旋转，直到一条直角边与直线 l 完全重合。'],
+      ['沿直线平移到 A 点','拖动三角板，使它沿重合的边平移，直到另一条直角边经过点 A。'],
+      ['沿直角边画垂线','沿经过 A 的直角边画线。这条边与 l 成直角，所以得到的是垂线。']
+    ],
+    parallel:[
+      ['第一块三角板先歪着靠近','先观察直线 m 和直线外一点 B。第一块三角板先保持倾斜。'],
+      ['第一块板一点吸附到 m','让第一块三角板的直角顶点吸附到直线 m，并点击顶点固定。'],
+      ['旋转第一块板贴住 m','绕固定点旋转第一块三角板，让一条直角边与直线 m 完全重合。'],
+      ['第二块板一点吸附到第一块板','让第二块三角板的一个顶点先吸附到第一块板的另一条直角边，先固定一个点。'],
+      ['旋转第二块板使边重合','绕吸附点旋转第二块三角板，直到它的一条直角边与第一块板的直角边完全重合。'],
+      ['沿第二块板滑到 B 点','保持第二块板不动，让第一块板沿两板重合的边平移，直到画线边经过 B。'],
+      ['沿边画出平行线','沿经过 B 的边画线。它与原来贴住 m 的边方向相同，所以新线与 m 平行。']
+    ],
+    double:[
+      ['第一块三角板先歪着靠近','第一块三角板先倾斜靠近参考线，不要一步就摆正。'],
+      ['一个顶点先吸附参考线','让直角顶点吸附到参考线，并点击这个顶点固定。'],
+      ['绕固定点旋转到贴边','绕固定点旋转，让第一块板的一条直角边与参考线重合。'],
+      ['第二块板先吸附一个点','让第二块板的顶点先吸附到第一块板的另一条直角边。'],
+      ['旋转第二块板使边贴合','绕吸附点旋转第二块板，直到两块板的直角边完全重合。'],
+      ['沿贴合边平移第一块板','按住第二块板不动，让第一块板沿贴合边滑动。'],
+      ['沿原来的边画第二条线','沿第一块板原来的画线边作线，两次画线方向相同，所以互相平行。']
+    ]
   };
   function openDemo(){demoStep=0;demoPanel.classList.add('show');renderDemo()}
-  function renderDemo(){const data=demoData[currentTask][demoStep];document.getElementById('demoIndex').textContent=`STEP ${demoStep+1} / 4`;document.getElementById('demoTitle').textContent=data[0];document.getElementById('demoText').textContent=data[1];document.getElementById('demoNext').textContent=demoStep===3?'完成演示':'下一步';drawDemoScene()}
+  function renderDemo(){const list=demoData[currentTask],data=list[demoStep];document.getElementById('demoIndex').textContent=`STEP ${demoStep+1} / ${list.length}`;document.getElementById('demoTitle').textContent=data[0];document.getElementById('demoText').textContent=data[1];document.getElementById('demoNext').textContent=demoStep===list.length-1?'完成演示':'下一步';drawDemoScene()}
   function drawDemoScene(){
     const r=demoCanvas.getBoundingClientRect(),dd=Math.min(devicePixelRatio||1,2);demoCanvas.width=r.width*dd;demoCanvas.height=r.height*dd;dctx.setTransform(dd,0,0,dd,0,0);const w=r.width,h=r.height;dctx.clearRect(0,0,w,h);
     dctx.strokeStyle='rgba(23,59,87,.08)';dctx.lineWidth=1;for(let x=0;x<w;x+=28){dctx.beginPath();dctx.moveTo(x,0);dctx.lineTo(x,h);dctx.stroke()}for(let y=0;y<h;y+=28){dctx.beginPath();dctx.moveTo(0,y);dctx.lineTo(w,y);dctx.stroke()}
@@ -281,19 +305,35 @@
     const tri=(pts,color)=>{dctx.beginPath();dctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>dctx.lineTo(p.x,p.y));dctx.closePath();dctx.fillStyle=color+'55';dctx.fill();dctx.strokeStyle=color;dctx.lineWidth=3;dctx.stroke()};
     const glow=(a,b)=>{line(a,b,'rgba(217,63,93,.25)',14);line(a,b,'#ff617e',4)};
     const rightMark=(r,p,q)=>{const u={x:(p.x-r.x),y:(p.y-r.y)},v={x:(q.x-r.x),y:(q.y-r.y)},ul=Math.max(1,Math.hypot(u.x,u.y)),vl=Math.max(1,Math.hypot(v.x,v.y)),s=17,a={x:r.x+u.x/ul*s,y:r.y+u.y/ul*s},c={x:r.x+v.x/vl*s,y:r.y+v.y/vl*s},b={x:a.x+v.x/vl*s,y:a.y+v.y/vl*s};dctx.beginPath();dctx.moveTo(a.x,a.y);dctx.lineTo(b.x,b.y);dctx.lineTo(c.x,c.y);dctx.strokeStyle=palette.navy;dctx.lineWidth=2;dctx.stroke()};
-    const baseY=h*.72,baseA={x:w*.12,y:baseY},baseB={x:w*.88,y:baseY};line(baseA,baseB,'#9b3d3d',5);dctx.fillStyle=palette.navy;dctx.font='italic 700 17px Georgia';dctx.fillText(currentTask==='perpendicular'?'l':'m',w*.85,baseY-10);
+    const dot=(p,color=palette.coral)=>{dctx.beginPath();dctx.arc(p.x,p.y,8,0,Math.PI*2);dctx.fillStyle=color;dctx.fill();dctx.beginPath();dctx.arc(p.x,p.y,16,0,Math.PI*2);dctx.strokeStyle=color+'55';dctx.lineWidth=5;dctx.stroke()};
+    const rotateAround=(p,o,a)=>{const x=p.x-o.x,y=p.y-o.y;return{x:o.x+x*Math.cos(a)-y*Math.sin(a),y:o.y+x*Math.sin(a)+y*Math.cos(a)}};
+    const arrow=(a,b,label)=>{dctx.save();dctx.setLineDash([7,7]);line(a,b,palette.navy,2);dctx.setLineDash([]);const ang=Math.atan2(b.y-a.y,b.x-a.x);dctx.beginPath();dctx.moveTo(b.x,b.y);dctx.lineTo(b.x-13*Math.cos(ang-.5),b.y-13*Math.sin(ang-.5));dctx.lineTo(b.x-13*Math.cos(ang+.5),b.y-13*Math.sin(ang+.5));dctx.closePath();dctx.fillStyle=palette.navy;dctx.fill();dctx.font='700 13px Microsoft YaHei';dctx.fillText(label,(a.x+b.x)/2+10,(a.y+b.y)/2-9);dctx.restore()};
+    const baseY=h*.74,baseA={x:w*.10,y:baseY},baseB={x:w*.90,y:baseY};line(baseA,baseB,'#9b3d3d',5);dctx.fillStyle=palette.navy;dctx.font='italic 700 17px Georgia';dctx.fillText(currentTask==='perpendicular'?'l':'m',w*.87,baseY-10);
     if(currentTask==='perpendicular'){
-      const leg=Math.min(w*.30,h*.32),A={x:w*.47,y:baseY-leg*.68};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(A.x,A.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+12,A.y-8);
-      if(demoStep>=1){const rY=demoStep===1?baseY-30:baseY,R={x:A.x,y:rY},P={x:A.x,y:rY-leg},Q={x:A.x+leg,y:rY};tri([R,P,Q],palette.amber);rightMark(R,P,Q);glow(P,R);if(demoStep>=2)glow(R,Q);if(demoStep>=3)line({x:A.x,y:baseY-leg-28},{x:A.x,y:baseY+55},palette.coral,5)}
+      const leg=Math.min(w*.25,h*.30),A={x:w*.64,y:baseY-leg*.68};dot(A);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+13,A.y-8);
+      const startR={x:w*.69,y:baseY-leg*.65},startP={x:startR.x,y:startR.y-leg},startQ={x:startR.x+leg,y:startR.y};
+      const fixedR={x:w*.34,y:baseY},fixedP={x:fixedR.x,y:baseY-leg},fixedQ={x:fixedR.x+leg,y:baseY};
+      const tilted=[fixedR,rotateAround(fixedP,fixedR,-.45),rotateAround(fixedQ,fixedR,-.45)];
+      const finalR={x:A.x,y:baseY},finalP={x:A.x,y:baseY-leg},finalQ={x:A.x+leg,y:baseY};
+      if(demoStep===0){const pts=[rotateAround(startR,startR,-.36),rotateAround(startP,startR,-.36),rotateAround(startQ,startR,-.36)];tri(pts,palette.amber);rightMark(pts[0],pts[1],pts[2])}
+      if(demoStep===1){tri(tilted,palette.amber);rightMark(...tilted);dot(fixedR,palette.pin)}
+      if(demoStep===2){tri([fixedR,fixedP,fixedQ],palette.amber);rightMark(fixedR,fixedP,fixedQ);dot(fixedR,palette.pin);glow(fixedR,fixedQ)}
+      if(demoStep>=3){tri([finalR,finalP,finalQ],palette.amber);rightMark(finalR,finalP,finalQ);glow(finalR,finalQ);glow(finalP,finalR);if(demoStep===3)arrow({x:fixedR.x,y:baseY-28},{x:finalR.x,y:baseY-28},'沿直线平移');if(demoStep===4)line({x:A.x,y:Math.max(24,A.y-leg*.45)},{x:A.x,y:baseY+48},palette.coral,5)}
     }else{
-      const leg=Math.min(w*.30,h*.27),B={x:w*.62,y:baseY-leg*.80};dctx.fillStyle=palette.coral;dctx.beginPath();dctx.arc(B.x,B.y,7,0,Math.PI*2);dctx.fill();dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+12,B.y-8);
-      const x=w*.43,top=baseY-leg,Q={x:x+leg,y:baseY},R={x,y:baseY},P={x,y:top};
-      if(demoStep>=1){if(demoStep<3){tri([R,P,Q],palette.amber);glow(R,Q)}else{const dy=B.y-baseY,R2={x:R.x,y:R.y+dy},P2={x:P.x,y:P.y+dy},Q2={x:Q.x,y:Q.y+dy};tri([R2,P2,Q2],palette.amber);glow(R2,Q2);line({x:w*.13,y:B.y},{x:w*.88,y:B.y},palette.coral,5)}rightMark(demoStep<3?R:{x:R.x,y:B.y},demoStep<3?P:{x:P.x,y:P.y+B.y-baseY},demoStep<3?Q:{x:Q.x,y:B.y})}
-      if(demoStep>=2){const L={x:x-leg*.78,y:baseY};tri([R,P,L],palette.teal);glow(P,R)}
-      if(demoStep===3){dctx.strokeStyle=palette.navy;dctx.lineWidth=2;dctx.setLineDash([7,7]);dctx.beginPath();dctx.moveTo(x+w*.05,baseY-h*.03);dctx.lineTo(x+w*.05,B.y+h*.03);dctx.stroke();dctx.setLineDash([]);dctx.fillStyle=palette.navy;dctx.font='700 13px Microsoft YaHei';dctx.fillText('沿贴合边向上滑动',x+w*.07,(baseY+B.y)/2)}
+      const leg=Math.min(w*.23,h*.27),B={x:w*.68,y:baseY-leg*.82};dot(B);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+13,B.y-8);
+      const R={x:w*.36,y:baseY},P={x:R.x,y:baseY-leg},Q={x:R.x+leg,y:baseY},L={x:R.x-leg*.78,y:baseY};
+      const initialR={x:w*.70,y:baseY-leg*.60},initialP={x:initialR.x,y:initialR.y-leg},initialQ={x:initialR.x+leg,y:initialR.y};
+      const firstTilt=[R,rotateAround(P,R,-.43),rotateAround(Q,R,-.43)];
+      const supportTilt=[R,rotateAround(P,R,.70),rotateAround(L,R,.70)];
+      if(demoStep===0){const pts=[initialR,rotateAround(initialP,initialR,-.38),rotateAround(initialQ,initialR,-.38)];tri(pts,palette.amber);rightMark(...pts)}
+      if(demoStep===1){tri(firstTilt,palette.amber);rightMark(...firstTilt);dot(R,palette.pin)}
+      if(demoStep>=2&&demoStep<5){tri([R,P,Q],palette.amber);rightMark(R,P,Q);if(demoStep===2){dot(R,palette.pin);glow(R,Q)}}
+      if(demoStep===3){tri(supportTilt,palette.teal);rightMark(...supportTilt);dot(R,palette.pin)}
+      if(demoStep>=4){tri([R,P,L],palette.teal);rightMark(R,P,L);glow(P,R)}
+      if(demoStep>=5){const dy=B.y-baseY,R2={x:R.x,y:R.y+dy},P2={x:P.x,y:P.y+dy},Q2={x:Q.x,y:Q.y+dy};tri([R2,P2,Q2],palette.amber);rightMark(R2,P2,Q2);glow(R2,Q2);if(demoStep===5)arrow({x:R.x+25,y:baseY-18},{x:R.x+25,y:B.y+18},'沿贴合边滑动');if(demoStep===6)line({x:w*.11,y:B.y},{x:w*.89,y:B.y},palette.coral,5)}
     }
   }
-  document.getElementById('demoBtn').addEventListener('click',openDemo);document.getElementById('demoClose').addEventListener('click',()=>demoPanel.classList.remove('show'));document.getElementById('demoNext').addEventListener('click',()=>{if(demoStep<3){demoStep++;renderDemo()}else demoPanel.classList.remove('show')});
+  document.getElementById('demoBtn').addEventListener('click',openDemo);document.getElementById('demoClose').addEventListener('click',()=>demoPanel.classList.remove('show'));document.getElementById('demoNext').addEventListener('click',()=>{const last=demoData[currentTask].length-1;if(demoStep<last){demoStep++;renderDemo()}else demoPanel.classList.remove('show')});
   window.addEventListener('keydown',e=>{if(e.key==='Escape')demoPanel.classList.remove('show');if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
   resize();setTimeout(()=>setMode('free'),80);
 })();
