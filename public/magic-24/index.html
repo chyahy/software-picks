@@ -1197,7 +1197,7 @@
     <button id="deckPrompt" type="button" aria-label="点击桌上的纸牌，进入24点游戏"><span class="suit">♥</span>点击纸牌 · 开始24点</button>
     <button id="factorPrompt" type="button" aria-label="点击桌上的质因数分解机，进入分解质因数练习"><span class="factorIcon">2×</span>质因数分解机</button>
     <button id="rubikPrompt" type="button" aria-label="点击桌上的魔方，进入正方体涂色探索"><span class="cubeIcon">立方</span>正方体涂色探索</button>
-    <button id="geometryPrompt" type="button" aria-label="点击桌上的尺规工具，进入平行与垂直实验室"><span class="geometryIcon">∟</span>展开尺规工具 · 进入实验室</button>
+    <button id="geometryPrompt" type="button" aria-label="点击二楼墙上的尺规工具，进入平行与垂直实验室"><span class="geometryIcon">∟</span>展开尺规工具 · 进入实验室</button>
     <aside id="gameShelf" aria-label="课堂游戏快捷入口">
         <button id="gameShelfToggle" type="button" aria-expanded="false" aria-controls="gameShelfList"><span class="shelfArrow" aria-hidden="true">‹</span>游<br>戏</button>
         <div class="gameShelfPanel">
@@ -1230,7 +1230,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.21.1';
+            const PAGE_VERSION = '2026.09.21.2';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -3835,10 +3835,11 @@
             put(box(2.0, 0.05, 0.05), TBLX, FY + 0.28, TBLZ + 0.45);
             put(box(2.0, 0.05, 0.05), TBLX, FY + 0.28, TBLZ - 0.45);
 
-            /* —— 平行与垂直实验室：桌上的便携尺规工具盒 —— */
+            /* —— 平行与垂直实验室：二楼后墙的便携尺规展示架 —— */
             const geometryG = new THREE.Group();
-            const GEOMETRY_HOME = V(1.48, TBL_TOP + 0.065, -2.52);
+            const GEOMETRY_HOME = V(0.45, FY + 1.48, -3.92),GEOMETRY_ROT_X=Math.PI/2;
             geometryG.position.copy(GEOMETRY_HOME);
+            geometryG.rotation.x=GEOMETRY_ROT_X;
             scene.add(geometryG);
             const geometryTools = [];
             const geometryBoard = new THREE.Mesh(
@@ -3892,8 +3893,9 @@
             const geometryReduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             function updateGeometryKit(dt,time){
                 const target=geometryLaunching?1:0;geometryLaunch+=(target-geometryLaunch)*Math.min(1,dt*5.5);const e=geometryLaunch*geometryLaunch*(3-2*geometryLaunch);
-                geometryG.position.y=GEOMETRY_HOME.y+e*.20+Math.sin(time*2.2)*(.004+.008*e);
-                geometryG.rotation.y=Math.sin(time*1.7)*.025+e*.10;
+                geometryG.position.y=GEOMETRY_HOME.y+Math.sin(time*2.2)*(.004+.008*e);
+                geometryG.position.z=GEOMETRY_HOME.z+e*.20;
+                geometryG.rotation.x=GEOMETRY_ROT_X;geometryG.rotation.y=0;geometryG.rotation.z=Math.sin(time*1.7)*.025+e*.10;
                 geometryTools.forEach(t=>{t.obj.position.x=t.closed.x+(t.opened.x-t.closed.x)*e;t.obj.position.z=t.closed.z+(t.opened.z-t.closed.z)*e;t.obj.rotation.y=t.closed.r+(t.opened.r-t.closed.r)*e;});
                 compassLegs[0].rotation.y=-.20-e*.28;compassLegs[1].rotation.y=.20+e*.28;
                 const pulse=1+e*(.08+.025*Math.sin(time*8));geometryG.scale.setScalar(pulse);
@@ -3915,11 +3917,11 @@
             }
             regMagic(geometryG, () => openGeometryLab(false));
             geometryPrompt.addEventListener('click', () => openGeometryLab(true));
-            addEventListener('pageshow',()=>{geometryLaunching=false;geometryLaunch=0;geometryG.position.copy(GEOMETRY_HOME);geometryG.rotation.y=0;geometryG.scale.setScalar(1)});
+            addEventListener('pageshow',()=>{geometryLaunching=false;geometryLaunch=0;geometryG.position.copy(GEOMETRY_HOME);geometryG.rotation.set(GEOMETRY_ROT_X,0,0);geometryG.scale.setScalar(1)});
             function updateGeometryPrompt() {
                 if (fullHouse || geometryLaunching) { geometryPrompt.classList.remove('visible'); return; }
                 geometryG.getWorldPosition(geometryScreenPos);
-                geometryScreenPos.y += .22;
+                geometryScreenPos.y += .36;
                 geometryScreenPos.project(camera);
                 const visible = geometryScreenPos.z > -1 && geometryScreenPos.z < 1 && Math.abs(geometryScreenPos.x) < 1.08 && Math.abs(geometryScreenPos.y) < 1.08;
                 geometryPrompt.style.left = ((geometryScreenPos.x * .5 + .5) * innerWidth) + 'px';
