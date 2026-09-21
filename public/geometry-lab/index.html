@@ -163,12 +163,12 @@
   function setupTask(type=currentTask){
     currentTask=type;taskSelect.value=type;taskText.textContent=tasks[type].text;userLines=[];history=[];resultBox.className='resultBox';resultBox.innerHTML='<h3>还没有检查</h3><p>完成作图后点击“检查作图”，我会告诉你角度是否正确。</p>';
     const y=H*.60;
-    if(type==='perpendicular'){givenLines=[{a:{x:W*.16,y},b:{x:W*.84,y},label:'l'}];taskPoint={x:W*.57,y:H*.38,label:'A'};}
+    if(type==='perpendicular'){givenLines=[{a:{x:W*.16,y},b:{x:W*.84,y},label:'l'}];taskPoint={x:W*.57,y:H*.48,label:'A'};}
     else if(type==='parallel'){givenLines=[{a:{x:W*.16,y:H*.64},b:{x:W*.76,y:H*.49},label:'m'}];taskPoint={x:W*.56,y:H*.39,label:'B'};}
     else{givenLines=[{a:{x:W*.14,y:H*.72},b:{x:W*.48,y:H*.72},label:'示范线'}];taskPoint=null;}
     resetTriangles();
   }
-  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.52,y:H*.70},label:'参考线'}];taskPoint={x:W*.68,y:H*.47,label:'A'};userLines=[];resetTriangles()} }
+  function setMode(next){mode=next;document.querySelectorAll('.modeBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('challengeBox').classList.toggle('show',mode==='challenge');if(mode==='challenge')setupTask(currentTask);else{givenLines=[{a:{x:W*.13,y:H*.70},b:{x:W*.52,y:H*.70},label:'参考线'}];taskPoint={x:W*.68,y:H*.58,label:'A'};userLines=[];resetTriangles()} }
   function setTool(next){tool=next;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===tool));statusPill.innerHTML=tool==='move'?'<strong>移动工具：</strong>顶点靠近目标会点吸附；两条方向接近的边靠拢会整边吸附。':tool==='drag'?'<strong>沿边拖画：</strong>从三角板边上按住并沿边拖动，松开完成线段。':'<strong>点边画整条：</strong>直接点击三角板任意一条边，自动画出整条直线。'}
   function findHit(p){
     for(let ti=triangles.length-1;ti>=0;ti--){const t=triangles[ti],v=verts(t),h=rotationHandle(t);if(dist(p,h)<19)return{kind:'rotate',ti};for(let vi=0;vi<3;vi++)if(dist(p,v[vi])<16)return{kind:'vertex',ti,vi};for(const [a,b,ei] of triEdges(t)){const q=pointSeg(p,a,b);if(q.d<14)return{kind:'edge',ti,ei,proj:q.p}}if(inPoly(p,v))return{kind:'body',ti}}
@@ -310,7 +310,7 @@
     const arrow=(a,b,label)=>{dctx.save();dctx.setLineDash([7,7]);line(a,b,palette.navy,2);dctx.setLineDash([]);const ang=Math.atan2(b.y-a.y,b.x-a.x);dctx.beginPath();dctx.moveTo(b.x,b.y);dctx.lineTo(b.x-13*Math.cos(ang-.5),b.y-13*Math.sin(ang-.5));dctx.lineTo(b.x-13*Math.cos(ang+.5),b.y-13*Math.sin(ang+.5));dctx.closePath();dctx.fillStyle=palette.navy;dctx.fill();dctx.font='700 13px Microsoft YaHei';dctx.fillText(label,(a.x+b.x)/2+10,(a.y+b.y)/2-9);dctx.restore()};
     const baseY=h*.74,baseA={x:w*.10,y:baseY},baseB={x:w*.90,y:baseY};line(baseA,baseB,'#9b3d3d',5);dctx.fillStyle=palette.navy;dctx.font='italic 700 17px Georgia';dctx.fillText(currentTask==='perpendicular'?'l':'m',w*.87,baseY-10);
     if(currentTask==='perpendicular'){
-      const leg=Math.min(w*.25,h*.30),A={x:w*.64,y:baseY-leg*.68};dot(A);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+13,A.y-8);
+      const leg=Math.min(w*.25,h*.30),A={x:w*.64,y:baseY-leg*.42};dot(A);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('A',A.x+13,A.y-8);
       const startR={x:w*.69,y:baseY-leg*.65},startP={x:startR.x,y:startR.y-leg},startQ={x:startR.x+leg,y:startR.y};
       const fixedR={x:w*.34,y:baseY},fixedP={x:fixedR.x,y:baseY-leg},fixedQ={x:fixedR.x+leg,y:baseY};
       const tilted=[fixedR,rotateAround(fixedP,fixedR,-.45),rotateAround(fixedQ,fixedR,-.45)];
@@ -318,7 +318,7 @@
       if(demoStep===0){const pts=[rotateAround(startR,startR,-.36),rotateAround(startP,startR,-.36),rotateAround(startQ,startR,-.36)];tri(pts,palette.amber);rightMark(pts[0],pts[1],pts[2])}
       if(demoStep===1){tri(tilted,palette.amber);rightMark(...tilted);dot(fixedR,palette.pin)}
       if(demoStep===2){tri([fixedR,fixedP,fixedQ],palette.amber);rightMark(fixedR,fixedP,fixedQ);dot(fixedR,palette.pin);glow(fixedR,fixedQ)}
-      if(demoStep>=3){tri([finalR,finalP,finalQ],palette.amber);rightMark(finalR,finalP,finalQ);glow(finalR,finalQ);glow(finalP,finalR);if(demoStep===3)arrow({x:fixedR.x,y:baseY-28},{x:finalR.x,y:baseY-28},'沿直线平移');if(demoStep===4)line({x:A.x,y:Math.max(24,A.y-leg*.45)},{x:A.x,y:baseY+48},palette.coral,5)}
+      if(demoStep>=3){tri([finalR,finalP,finalQ],palette.amber);rightMark(finalR,finalP,finalQ);glow(finalR,finalQ);glow(finalP,finalR);if(demoStep===3)arrow({x:fixedR.x,y:baseY-28},{x:finalR.x,y:baseY-28},'沿直线平移');if(demoStep===4)line({x:A.x,y:Math.max(24,A.y-leg*.45)},{x:A.x,y:baseY+48},palette.coral,5);dot(A)}
     }else{
       const leg=Math.min(w*.23,h*.27),B={x:w*.68,y:baseY-leg*.82};dot(B);dctx.fillStyle=palette.navy;dctx.font='800 18px Georgia';dctx.fillText('B',B.x+13,B.y-8);
       const R={x:w*.36,y:baseY},P={x:R.x,y:baseY-leg},Q={x:R.x+leg,y:baseY},L={x:R.x-leg*.78,y:baseY};
