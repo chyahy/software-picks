@@ -1197,7 +1197,7 @@
     <button id="deckPrompt" type="button" aria-label="点击桌上的纸牌，进入24点游戏"><span class="suit">♥</span>点击纸牌 · 开始24点</button>
     <button id="factorPrompt" type="button" aria-label="点击桌上的质因数分解机，进入分解质因数练习"><span class="factorIcon">2×</span>质因数分解机</button>
     <button id="rubikPrompt" type="button" aria-label="点击桌上的魔方，进入正方体涂色探索"><span class="cubeIcon">立方</span>正方体涂色探索</button>
-    <button id="geometryPrompt" type="button" aria-label="点击桌上的三角板，进入平行与垂直实验室"><span class="geometryIcon">∟</span>平行与垂直实验室</button>
+    <button id="geometryPrompt" type="button" aria-label="点击桌上的尺规工具，进入平行与垂直实验室"><span class="geometryIcon">∟</span>展开尺规工具 · 进入实验室</button>
     <aside id="gameShelf" aria-label="课堂游戏快捷入口">
         <button id="gameShelfToggle" type="button" aria-expanded="false" aria-controls="gameShelfList"><span class="shelfArrow" aria-hidden="true">‹</span>游<br>戏</button>
         <div class="gameShelfPanel">
@@ -1206,7 +1206,7 @@
                 <a class="gameShelfLink" href="game.html"><span class="gameShelfIcon">24</span><span>24点游戏</span><span class="gameShelfGo">›</span></a>
                 <a class="gameShelfLink" href="../prime-factor/?v=2026.09.18.2" data-live="https://chyahy.github.io/software-picks/prime-factor/?v=2026.09.18.2"><span class="gameShelfIcon">2×</span><span>分解质因数</span><span class="gameShelfGo">›</span></a>
                 <a class="gameShelfLink" href="../cube-coloring/?v=2026.09.18.1" data-live="https://chyahy.github.io/software-picks/cube-coloring/?v=2026.09.18.1"><span class="gameShelfIcon">立方</span><span>正方体涂色</span><span class="gameShelfGo">›</span></a>
-                <a class="gameShelfLink" href="../geometry-lab/?v=2026.09.21.1" data-live="https://chyahy.github.io/software-picks/geometry-lab/?v=2026.09.21.1"><span class="gameShelfIcon">∟</span><span>平行与垂直</span><span class="gameShelfGo">›</span></a>
+                <a class="gameShelfLink" href="../geometry-lab/" data-live="https://chyahy.github.io/software-picks/geometry-lab/"><span class="gameShelfIcon">∟</span><span>平行与垂直</span><span class="gameShelfGo">›</span></a>
             </nav>
         </div>
     </aside>
@@ -1230,7 +1230,7 @@
     <script>
         (function () {
             'use strict';
-            const PAGE_VERSION = '2026.09.18.4';
+            const PAGE_VERSION = '2026.09.21.1';
 
             async function refreshWhenSiteUpdates() {
                 if (!/^https?:$/.test(location.protocol)) return;
@@ -3835,49 +3835,89 @@
             put(box(2.0, 0.05, 0.05), TBLX, FY + 0.28, TBLZ + 0.45);
             put(box(2.0, 0.05, 0.05), TBLX, FY + 0.28, TBLZ - 0.45);
 
-            /* —— 平行与垂直实验室：桌上的几何作图板 —— */
+            /* —— 平行与垂直实验室：桌上的便携尺规工具盒 —— */
             const geometryG = new THREE.Group();
             const GEOMETRY_HOME = V(1.48, TBL_TOP + 0.065, -2.52);
             geometryG.position.copy(GEOMETRY_HOME);
             scene.add(geometryG);
+            const geometryTools = [];
             const geometryBoard = new THREE.Mesh(
-                new THREE.BoxGeometry(0.70, 0.035, 0.46),
-                LITMAT(0xf4eddc)
+                new THREE.BoxGeometry(0.78, 0.04, 0.50),
+                LITMAT(0x173b57)
             );
             geometryG.add(geometryBoard);
-            geometryBoard.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometryBoard.geometry), new THREE.LineBasicMaterial({ color: 0x34546a })));
+            geometryBoard.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometryBoard.geometry), new THREE.LineBasicMaterial({ color: 0xefb747 })));
+            const geometryInset = new THREE.Mesh(new THREE.BoxGeometry(0.71, 0.018, 0.43), LITMAT(0xf4eddc));
+            geometryInset.position.y = .029;
+            geometryG.add(geometryInset);
+            for (const [cx,cz] of [[-.34,-.19],[.34,-.19],[-.34,.19],[.34,.19]]) {
+                const stud = new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.014,10),new THREE.MeshBasicMaterial({color:0xc99735}));
+                stud.position.set(cx,.046,cz);geometryG.add(stud);
+            }
 
-            function makeSetSquare(points, color, x, z, rotationY) {
+            function makeSetSquare(points, color, closed, opened) {
+                const holder = new THREE.Group();
                 const shape = new THREE.Shape();
                 shape.moveTo(points[0][0], points[0][1]);
                 for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], points[i][1]);
                 shape.closePath();
-                const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: .72, side: THREE.DoubleSide }));
+                const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: .76, side: THREE.DoubleSide }));
                 mesh.rotation.x = -Math.PI / 2;
-                mesh.rotation.z = rotationY;
-                mesh.position.set(x, 0.024, z);
                 mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), new THREE.LineBasicMaterial({ color: 0x173b57 })));
-                geometryG.add(mesh);
+                holder.add(mesh);holder.position.set(closed.x,.052,closed.z);holder.rotation.y=closed.r;geometryG.add(holder);
+                geometryTools.push({obj:holder,closed,opened});return holder;
             }
-            makeSetSquare([[-.18, -.12], [.18, -.12], [-.18, .20]], 0xefb747, -.13, .015, -.15);
-            makeSetSquare([[-.20, -.09], [.20, -.09], [-.20, .13]], 0x2d8f8b, .13, -.04, .18);
+            makeSetSquare([[-.16,-.10],[.16,-.10],[-.16,.18]],0xefb747,{x:-.12,z:.015,r:-.10},{x:-.22,z:-.015,r:-.50});
+            makeSetSquare([[-.18,-.08],[.18,-.08],[-.18,.12]],0x2d8f8b,{x:.11,z:-.045,r:.12},{x:.19,z:-.015,r:.46});
+
+            const geometryRuler = new THREE.Group();
+            const rulerBody = new THREE.Mesh(new THREE.BoxGeometry(.55,.018,.075),new THREE.MeshBasicMaterial({color:0xf1dfb1}));
+            rulerBody.add(new THREE.LineSegments(new THREE.EdgesGeometry(rulerBody.geometry),new THREE.LineBasicMaterial({color:0x173b57})));
+            geometryRuler.add(rulerBody);
+            const tickPts=[];
+            for(let i=-5;i<=5;i++){const x=i*.0475,l=i%5===0?.028:i%2===0?.021:.014;tickPts.push(V(x,.011,-.037),V(x,.011,-.037+l));}
+            geometryRuler.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(tickPts),new THREE.LineBasicMaterial({color:0x8b6735})));
+            geometryRuler.position.set(0,.058,.155);geometryG.add(geometryRuler);
+            geometryTools.push({obj:geometryRuler,closed:{x:0,z:.155,r:0},opened:{x:0,z:.195,r:.16}});
+
+            const geometryCompass = new THREE.Group();
+            const compassMat=new THREE.MeshBasicMaterial({color:0xc99735}),compassDark=new THREE.MeshBasicMaterial({color:0x173b57});
+            const compassPivot=new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),compassMat);compassPivot.position.set(0,.035,-.09);geometryCompass.add(compassPivot);
+            const compassLegs=[];
+            for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.026,.026,.25),side<0?compassMat:compassDark);leg.position.set(side*.036,.025,.025);leg.rotation.y=side*.20;geometryCompass.add(leg);compassLegs.push(leg);}
+            geometryCompass.position.set(.22,.06,.045);geometryCompass.rotation.y=-.12;geometryG.add(geometryCompass);
+            geometryTools.push({obj:geometryCompass,closed:{x:.22,z:.045,r:-.12},opened:{x:.27,z:.055,r:-.36}});
+
+            let geometryLaunch=0,geometryLaunching=false;
+            const geometryReduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            function updateGeometryKit(dt,time){
+                const target=geometryLaunching?1:0;geometryLaunch+=(target-geometryLaunch)*Math.min(1,dt*5.5);const e=geometryLaunch*geometryLaunch*(3-2*geometryLaunch);
+                geometryG.position.y=GEOMETRY_HOME.y+e*.20+Math.sin(time*2.2)*(.004+.008*e);
+                geometryG.rotation.y=Math.sin(time*1.7)*.025+e*.10;
+                geometryTools.forEach(t=>{t.obj.position.x=t.closed.x+(t.opened.x-t.closed.x)*e;t.obj.position.z=t.closed.z+(t.opened.z-t.closed.z)*e;t.obj.rotation.y=t.closed.r+(t.opened.r-t.closed.r)*e;});
+                compassLegs[0].rotation.y=-.20-e*.28;compassLegs[1].rotation.y=.20+e*.28;
+                const pulse=1+e*(.08+.025*Math.sin(time*8));geometryG.scale.setScalar(pulse);
+            }
 
             const geometryPrompt = document.getElementById('geometryPrompt');
             const geometryScreenPos = new THREE.Vector3();
-            geometryG.userData.aimLabel = '打开平行与垂直实验室';
+            geometryG.userData.aimLabel = '展开尺规工具，打开平行与垂直实验室';
             geometryG.userData.sfx = 'magic';
             function openGeometryLab(playSound = true) {
+                if(geometryLaunching)return;
+                geometryLaunching=true;
                 geometryPrompt.classList.remove('visible');
                 if (playSound) SND.play('magic');
                 const target = location.protocol === 'file:'
-                    ? 'https://chyahy.github.io/software-picks/geometry-lab/?v=2026.09.21.1'
-                    : new URL('../geometry-lab/?v=2026.09.21.1', location.href).href;
-                window.location.href = target;
+                    ? 'https://chyahy.github.io/software-picks/geometry-lab/'
+                    : new URL('../geometry-lab/', location.href).href;
+                setTimeout(()=>{window.location.href=target},geometryReduceMotion?80:1450);
             }
             regMagic(geometryG, () => openGeometryLab(false));
             geometryPrompt.addEventListener('click', () => openGeometryLab(true));
+            addEventListener('pageshow',()=>{geometryLaunching=false;geometryLaunch=0;geometryG.position.copy(GEOMETRY_HOME);geometryG.rotation.y=0;geometryG.scale.setScalar(1)});
             function updateGeometryPrompt() {
-                if (fullHouse) { geometryPrompt.classList.remove('visible'); return; }
+                if (fullHouse || geometryLaunching) { geometryPrompt.classList.remove('visible'); return; }
                 geometryG.getWorldPosition(geometryScreenPos);
                 geometryScreenPos.y += .22;
                 geometryScreenPos.project(camera);
@@ -10576,6 +10616,7 @@
                 updateDeckPrompt();
                 updateFactorPrompt();
                 updateRubikPrompt();
+                updateGeometryKit(dt,time);
                 updateGeometryPrompt();
                 renderer.render(scene, camera);
             }
