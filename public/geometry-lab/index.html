@@ -30,9 +30,9 @@
     .resultBox{margin-top:14px;padding:15px;border:1px dashed #cbbd9f;border-radius:13px;background:#fffaf0}.resultBox h3{margin:0 0 6px;font:800 16px "STKaiti","KaiTi",serif}.resultBox p{margin:0;color:#6c777a;font-size:12px;line-height:1.7}.resultBox.success{border-style:solid;border-color:#79b9ad;background:#e4f4ef}.resultBox.error{border-style:solid;border-color:#e19a86;background:#fff0e9}
     .teacherTip{margin-top:auto;padding-top:18px;display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:end}.teacherTip img{width:72px;height:95px;object-fit:cover;object-position:top;border-radius:36px 36px 12px 12px;filter:drop-shadow(0 7px 10px rgba(0,0,0,.15))}.bubble{position:relative;padding:12px;border-radius:12px 12px 12px 2px;background:var(--navy);color:white;font-size:11px;line-height:1.65}.bubble strong{color:var(--amber)}
     .demoPanel{position:absolute;z-index:10;inset:18px;display:none;grid-template-columns:minmax(0,1fr) 260px;overflow:hidden;border-radius:16px;background:rgba(247,241,229,.97);box-shadow:0 20px 60px rgba(13,43,67,.28);backdrop-filter:blur(14px)}.demoPanel.show{display:grid}.demoVisual{position:relative;overflow:hidden;background:linear-gradient(135deg,#f7f1e5,#efe4d1)}.demoCanvas{width:100%;height:100%;display:block}.demoCopy{padding:24px;display:flex;flex-direction:column;background:var(--navy2);color:white}.demoCopy small{color:#78cbc4;font-weight:800;letter-spacing:.12em}.demoCopy h2{margin:12px 0 14px;font:800 27px/1.3 "STKaiti","KaiTi",serif}.demoCopy p{margin:0;color:#bed0db;font-size:13px;line-height:1.8}.demoNav{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.demoNav button{height:42px;border:1px solid rgba(255,255,255,.2);border-radius:9px;background:rgba(255,255,255,.08);color:white;font-weight:800}.demoNav button.primary{background:var(--amber);color:var(--navy2);border-color:var(--amber)}
-    .mobileRotate{display:none}
+    .mobileRotate,.mobileToolBar{display:none}
     @media(max-width:1080px){.workspace{grid-template-columns:250px minmax(0,1fr)}.rightPanel{grid-column:1/-1;max-height:none}.rightPanel .panelInner{display:grid;grid-template-columns:1fr 1fr;gap:20px}.teacherTip{margin-top:0}.stagePanel{min-height:650px}}
-    @media(max-width:760px){header{height:66px;padding:0 12px}.brand strong{font-size:14px}.brand small{display:none}.headerTitle{font-size:18px}.headerTools .headerBtn:first-child{display:none}.workspace{display:flex;flex-direction:column;padding:9px;gap:9px}.panel{border-radius:14px}.leftPanel{order:2}.stagePanel{order:1;min-height:62svh;border-radius:14px}.rightPanel{order:3}.panelInner{padding:14px}.leftPanel .panelInner{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.leftPanel .panelTitle,.leftPanel .modeTabs,.leftPanel .challengeBox{grid-column:1/-1}.toolBtn{min-height:52px}.rightPanel .panelInner{grid-template-columns:1fr}.teacherTip{display:none}.demoPanel{inset:8px;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.demoCopy{padding:16px}.demoCopy h2{font-size:21px;margin:6px 0}.demoCopy p{font-size:12px}.demoNav{margin-top:10px}.snapLegend{display:none}.statusPill{max-width:95%;font-size:11px}.mobileRotate{display:block;position:absolute;z-index:4;right:10px;bottom:10px;padding:8px 11px;border-radius:9px;background:rgba(23,59,87,.86);color:white;font-size:10px}}
+    @media(max-width:760px){header{height:66px;padding:0 12px}.brand strong{font-size:14px}.brand small{display:none}.headerTitle{font-size:18px}.headerTools .headerBtn:first-child{display:none}.workspace{display:flex;flex-direction:column;padding:9px;gap:9px}.panel{border-radius:14px}.leftPanel{order:2}.stagePanel{order:1;min-height:68svh;border-radius:14px}.rightPanel{order:3}.panelInner{padding:14px}.leftPanel .panelInner{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.leftPanel .panelTitle,.leftPanel .modeTabs,.leftPanel .challengeBox{grid-column:1/-1}.drawingTools{display:none}.toolBtn{min-height:52px}.rightPanel .panelInner{grid-template-columns:1fr}.teacherTip{display:none}.stageTop{display:none}.mobileToolBar{position:absolute;z-index:6;top:8px;left:8px;right:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:5px;border:1px solid rgba(23,59,87,.15);border-radius:12px;background:rgba(255,250,240,.94);box-shadow:0 7px 22px rgba(23,59,87,.14);backdrop-filter:blur(10px)}.mobileToolBar button{height:38px;padding:0 4px;border:0;border-radius:8px;background:#e9e1d3;color:var(--navy);font-size:11px;font-weight:800}.mobileToolBar button.active{background:var(--teal);color:white;box-shadow:0 4px 10px rgba(45,143,139,.25)}body.demo-open{overflow:hidden}.demoPanel{position:fixed;z-index:1000;inset:0;width:100vw;height:100dvh;border-radius:0;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;background:var(--paper)}.demoVisual{min-height:0}.demoCopy{min-height:190px;padding:16px 16px max(16px,env(safe-area-inset-bottom))}.demoCopy h2{font-size:21px;margin:6px 0}.demoCopy p{font-size:12px;line-height:1.6}.demoNav{margin-top:10px}.snapLegend{display:none}.statusPill{max-width:95%;font-size:11px}.mobileRotate{display:block;position:absolute;z-index:4;right:10px;bottom:10px;padding:8px 11px;border-radius:9px;background:rgba(23,59,87,.86);color:white;font-size:10px}}
     @media(max-width:460px){.headerTitle{display:none}.headerBtn{padding:0 10px}.leftPanel .panelInner{display:block}.toolGrid{grid-template-columns:repeat(2,1fr)}.stagePanel{min-height:68svh}.taskCard p{font-size:14px}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
   </style>
@@ -52,7 +52,7 @@
         <div class="challengeBox" id="challengeBox">
           <div class="section"><div class="sectionLabel">选择任务</div><select class="challengeSelect" id="taskSelect"><option value="perpendicular">过点 A 作垂线</option><option value="parallel">过点 B 作平行线</option><option value="double">两把三角板画平行线</option></select><div class="taskCard"><small>本关任务</small><p id="taskText">过直线外一点 A，画出直线 l 的垂线。</p></div></div>
         </div>
-        <div class="section"><div class="sectionLabel">画线方式 <em>两种都能用</em></div><div class="toolGrid"><button class="toolBtn active" data-tool="move"><span>✥</span>移动工具</button><button class="toolBtn" data-tool="drag"><span>✎</span>沿边拖画</button><button class="toolBtn wide" data-tool="auto"><span>—</span>点边画整条直线</button></div></div>
+        <div class="section drawingTools"><div class="sectionLabel">画线方式 <em>两种都能用</em></div><div class="toolGrid"><button class="toolBtn active" data-tool="move"><span>✥</span>移动工具</button><button class="toolBtn" data-tool="drag"><span>✎</span>沿边拖画</button><button class="toolBtn wide" data-tool="auto"><span>—</span>点边画整条直线</button></div></div>
         <div class="section"><div class="sectionLabel">三角板 <em>点击顶点可固定</em></div><div class="triPick"><button class="triChip" data-select-tri="0"><span class="triIcon"></span>45° 三角板</button><button class="triChip" data-select-tri="1"><span class="triIcon thirty"></span>30°—60° 三角板</button></div></div>
         <div class="section"><div class="sectionLabel">以后可增加的工具</div><div class="toolGrid"><button class="toolBtn future" disabled><span>▰</span>直尺</button><button class="toolBtn future" disabled><span>◠</span>量角器</button><button class="toolBtn future wide" disabled><span>◯</span>圆规 · 预留位置</button></div></div>
         <div class="section"><div class="hintCard"><strong>磁吸提示：</strong>顶点靠近点或线会点吸附；两条方向接近的边靠拢时会整条边吸附，并用粉色高亮显示。</div></div>
@@ -62,6 +62,7 @@
     <section class="stagePanel" id="stagePanel">
       <canvas id="board" aria-label="几何作图画板"></canvas>
       <div class="stageTop"><div class="statusPill" id="statusPill"><strong>移动工具：</strong>拖动三角板；顶点和整条边都能自动吸附。</div><div class="snapLegend"><i class="snapDot"></i>点 / 边吸附</div></div>
+      <div class="mobileToolBar" aria-label="手机画线工具"><button class="active" data-tool="move">✥ 移动</button><button data-tool="drag">✎ 拖画</button><button data-tool="auto">— 整条线</button></div>
       <div class="mobileRotate">横屏操作更宽敞</div>
       <div class="toast" id="toast"></div>
       <div class="demoPanel" id="demoPanel">
@@ -100,7 +101,7 @@
   const taskText = document.getElementById('taskText');
   const stepEls = [...document.querySelectorAll('.step')];
   let W=900,H=650,dpr=1, mode='free', tool='move', selectedTri=0, interaction=null, history=[], toastTimer;
-  let currentTask='perpendicular', userLines=[], givenLines=[], taskPoint=null, demoStep=0;
+  let currentTask='perpendicular', userLines=[], givenLines=[], taskPoint=null, demoStep=0, demoReturnY=0, demoWasMobile=false;
 
   const palette = {navy:'#173b57',amber:'#efb747',teal:'#2d8f8b',coral:'#e66a4f',pin:'#d93f5d',paper:'#f7f1e5'};
   const triangles = [
@@ -300,7 +301,8 @@
       ['沿原来的边画第二条线','沿第一块板原来的画线边作线，两次画线方向相同，所以互相平行。']
     ]
   };
-  function openDemo(){demoStep=0;demoPanel.classList.add('show');renderDemo()}
+  function openDemo(){demoReturnY=window.scrollY;demoWasMobile=window.matchMedia('(max-width:760px)').matches;demoStep=0;demoPanel.classList.add('show');if(demoWasMobile)document.body.classList.add('demo-open');renderDemo()}
+  function closeDemo(){demoPanel.classList.remove('show');document.body.classList.remove('demo-open');if(demoWasMobile)requestAnimationFrame(()=>window.scrollTo({top:demoReturnY,behavior:'auto'}));demoWasMobile=false}
   function renderDemo(){const list=demoData[currentTask],data=list[demoStep];document.getElementById('demoIndex').textContent=`STEP ${demoStep+1} / ${list.length}`;document.getElementById('demoTitle').textContent=data[0];document.getElementById('demoText').textContent=data[1];document.getElementById('demoNext').textContent=demoStep===list.length-1?'完成演示':'下一步';drawDemoScene()}
   function drawDemoScene(){
     const r=demoCanvas.getBoundingClientRect(),dd=Math.min(devicePixelRatio||1,2);demoCanvas.width=r.width*dd;demoCanvas.height=r.height*dd;dctx.setTransform(dd,0,0,dd,0,0);const w=r.width,h=r.height;dctx.clearRect(0,0,w,h);
@@ -337,8 +339,8 @@
       if(demoStep>=5){const dy=B.y-baseY,R2={x:R.x,y:R.y+dy},P2={x:P.x,y:P.y+dy},Q2={x:Q.x,y:Q.y+dy};tri([R2,P2,Q2],palette.amber);rightMark(R2,P2,Q2);glow(R2,Q2);if(demoStep===5)arrow({x:R.x+25,y:baseY-18},{x:R.x+25,y:B.y+18},'沿贴合边滑动');if(demoStep===6)line({x:w*.11,y:B.y},{x:w*.89,y:B.y},palette.coral,5)}
     }
   }
-  document.getElementById('demoBtn').addEventListener('click',openDemo);document.getElementById('demoClose').addEventListener('click',()=>demoPanel.classList.remove('show'));document.getElementById('demoNext').addEventListener('click',()=>{const last=demoData[currentTask].length-1;if(demoStep<last){demoStep++;renderDemo()}else demoPanel.classList.remove('show')});
-  window.addEventListener('keydown',e=>{if(e.key==='Escape')demoPanel.classList.remove('show');if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
+  document.getElementById('demoBtn').addEventListener('click',openDemo);document.getElementById('demoClose').addEventListener('click',closeDemo);document.getElementById('demoNext').addEventListener('click',()=>{const last=demoData[currentTask].length-1;if(demoStep<last){demoStep++;renderDemo()}else closeDemo()});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape')closeDemo();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
   resize();setTimeout(()=>setMode('free'),80);
 })();
 </script>
